@@ -238,6 +238,24 @@ const GameScreen = () => {
             pointerEvents="none" 
           />
         )}
+        
+        {/* ── TOP LEFT: AVATAR ── */}
+        <View style={[styles.avatarReacting, { top: Math.max(insets.top, 50) }]}>
+          <PlayerAvatar 
+            fear={fear} 
+            isHallucinating={isHallucinating} 
+            size={64}
+            style={styles.avatarRefined}
+          />
+          {(hoverMessage || cardMessage || state.jackThought) && (
+            <View style={styles.thoughtBubble}>
+              <View style={styles.bubbleTail} />
+              <Text style={styles.thoughtText}>
+                {hoverMessage || cardMessage || state.jackThought}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* ── TOP RIGHT: MENU ── */}
         <View style={[styles.topRightControls, { top: Math.max(insets.top, 50) }]}>
@@ -281,25 +299,6 @@ const GameScreen = () => {
           locations={[0, 0.7, 0.9, 1]}
           style={[styles.bottomRegion, { paddingBottom: Math.max(insets.bottom, 20) }]}
         >
-          
-          {/* Avatar reacting to journey, anchored to the top of the region */}
-          <View style={styles.avatarReacting}>
-            <PlayerAvatar 
-              fear={fear} 
-              isHallucinating={isHallucinating} 
-              size={64}
-              style={styles.avatarRefined}
-            />
-            {(hoverMessage || cardMessage || state.jackThought) && (
-              <View style={styles.thoughtBubble}>
-                <View style={styles.bubbleTail} />
-                <Text style={styles.thoughtText}>
-                  {hoverMessage || cardMessage || state.jackThought}
-                </Text>
-              </View>
-            )}
-          </View>
-
           {/* Unified Info Block (Location + Bars + Fear) */}
           <View style={styles.infoBlockUnified}>
             <LevelProgress
@@ -414,11 +413,9 @@ const styles = StyleSheet.create({
   },
   avatarReacting: {
     position: 'absolute',
-    bottom: '100%', // Stable anchor above the gradient region
-    left: 20,
-    marginBottom: 10,
+    left: 8,
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     zIndex: 1000,
   },
   avatarRefined: {
@@ -438,35 +435,35 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   thoughtBubble: {
-    backgroundColor: 'rgba(244, 228, 188, 0.72)',
-    padding: 14,
+    backgroundColor: 'rgba(215, 196, 158, 0.95)',
     borderRadius: 15,
-    borderWidth: 1.5,
-    borderColor: '#c4a484',
+    padding: 10,
     maxWidth: 220,
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: '#8d6e63',
+    position: 'relative',
+    top: 5,
+    // Add some shadow for contrast against world art
     shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   bubbleTail: {
     position: 'absolute',
-    top: 25, 
-    left: -12, 
+    left: -8,
+    top: 15,
     width: 0,
     height: 0,
     backgroundColor: 'transparent',
     borderStyle: 'solid',
-    borderTopWidth: 10,
-    borderRightWidth: 12,
-    borderBottomWidth: 10,
-    borderLeftWidth: 0,
+    borderRightWidth: 10,
+    borderTopWidth: 8,
+    borderBottomWidth: 8,
+    borderRightColor: '#8d6e63',
     borderTopColor: 'transparent',
-    borderRightColor: '#c4a484',
     borderBottomColor: 'transparent',
-    borderLeftColor: 'transparent',
-    opacity: 0.72,
   },
   thoughtText: {
     color: '#2c1e14',
@@ -474,9 +471,6 @@ const styles = StyleSheet.create({
     fontFamily: 'IndieFlower_400Regular',
     lineHeight: 22,
     textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1,
   },
   bottomRegion: {
     position: 'absolute',
