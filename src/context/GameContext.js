@@ -238,6 +238,28 @@ const gameReducer = (state, action) => {
           discardPile: afterDiscard.discardPile,
         };
       }
+      
+      // ── Victory First Check ──────────────────────────────────────────────────
+      if (newProgress >= 100) {
+        const nextLevel = getNextLevel(level.id);
+
+        if (!nextLevel) {
+          return {
+            ...state,
+            screen: 'win',
+            progress: 100,
+            fear: newFear,
+            ending: computeEnding(newFear, state.clues.length),
+          };
+        }
+        return {
+          ...state,
+          progress: 100,
+          fear: newFear,
+          screen: 'level_intro',
+          currentLevel: nextLevel,
+        };
+      }
 
       // ── Check for Isolation (Resource Depletion) ───────────────────────────
       if (afterDraw.hand.length === 0 && afterDraw.deck.length === 0 && newProgress < 100) {
@@ -296,27 +318,8 @@ const gameReducer = (state, action) => {
          }
       }
 
-      // ── Check win ──────────────────────────────────────────────────────────
-      if (newProgress >= 100) {
-        const nextLevel = getNextLevel(level.id);
-
-        if (!nextLevel) {
-          return {
-            ...state,
-            screen: 'win',
-            progress: 100,
-            fear: newFear,
-            ending: computeEnding(newFear, state.clues.length),
-          };
-        }
-        return {
-          ...state,
-          progress: 100,
-          fear: newFear,
-          screen: 'level_intro',
-          currentLevel: nextLevel,
-        };
-      }
+      // Win check was moved up to prioritize victory over failure
+      
 
       if (captured) {
         // Survival Safety Net

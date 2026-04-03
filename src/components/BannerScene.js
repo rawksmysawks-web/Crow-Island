@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BANNER_HEIGHT = SCREEN_HEIGHT * 0.50; // Approx 50% of screen height for the story header
+const BANNER_HEIGHT = SCREEN_HEIGHT * 0.70; // Approx 70% of screen height for the story header
 
 const FOG_OVERLAY = require('../../assets/images/fog_overlay.png');
 
