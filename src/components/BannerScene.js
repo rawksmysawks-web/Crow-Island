@@ -25,8 +25,10 @@ const BannerScene = React.memo(({
   bannerKey     = 'arrival',
   isPaused      = false,
 }) => {
-  const fogAnim = useRef(new Animated.Value(0)).current;
-  const loopRef = useRef(null);
+  const fogAnim   = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const loopRef   = useRef(null);
+  const breathRef = useRef(null);
 
   useEffect(() => {
     // Re-initialize animation when banner changes
@@ -49,19 +51,39 @@ const BannerScene = React.memo(({
       loopRef.current.start();
     }
 
+    // Breathing scale animation
+    breathRef.current = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: 20000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1.0,
+          duration: 20000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    if (!isPaused) breathRef.current.start();
+
     return () => {
-      if (loopRef.current) {
-        loopRef.current.stop();
-      }
+      if (loopRef.current) loopRef.current.stop();
+      if (breathRef.current) breathRef.current.stop();
     };
-  }, [bannerKey, fogAnim]);
+  }, [bannerKey, fogAnim, scaleAnim]);
 
   // Handle manual pause/resume without resetting position
   useEffect(() => {
     if (isPaused) {
       if (loopRef.current) loopRef.current.stop();
+      if (breathRef.current) breathRef.current.stop();
     } else {
       if (loopRef.current) loopRef.current.start();
+      if (breathRef.current) breathRef.current.start();
     }
   }, [isPaused]);
 
@@ -71,7 +93,10 @@ const BannerScene = React.memo(({
   return (
     <View style={styles.outer}>
       {/* ── Background Static Image ──────────────────────────────── */}
-      <View style={styles.bgContainer}>
+      <Animated.View style={[
+        styles.bgContainer,
+        { transform: [{ scale: scaleAnim }] }
+      ]}>
         <Image 
           source={bgSource} 
           style={styles.bgImage} 
@@ -80,7 +105,7 @@ const BannerScene = React.memo(({
         
         {/* Night tint overlay */}
         {phase === 'night' && <View style={styles.nightOverlay} />}
-      </View>
+      </Animated.View>
 
       {/* ── Atmospheric Fog (Still drifts for depth) ─────────────── */}
       <Animated.View 
@@ -108,11 +133,14 @@ const styles = StyleSheet.create({
   },
   bgContainer: {
     width: '100%',
-    height: '100%',
+    minHeight: '120%', 
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bgImage: {
     width: '100%',
     height: '100%',
+    // resizeMode: 'cover' handled in component for better RN-web behavior
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
