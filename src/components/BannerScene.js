@@ -118,7 +118,11 @@ const BannerScene = React.memo(({
 
 const styles = StyleSheet.create({
   outer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '75%',
     overflow: 'hidden',
     backgroundColor: '#050010',
   },

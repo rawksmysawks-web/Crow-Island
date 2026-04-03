@@ -275,8 +275,8 @@ const GameScreen = () => {
 
         {/* ── BOTTOM CONSOLIDATED REGION ─────────────────────────────── */}
         <LinearGradient
-          colors={['transparent', 'transparent', 'rgba(0,0,0,1)']}
-          locations={[0, 0.5, 1]}
+          colors={['transparent', 'rgba(0,0,0,1)', 'rgba(0,0,0,1)']}
+          locations={[0, 0.4, 1]}
           style={styles.bottomRegion}
         >
           
