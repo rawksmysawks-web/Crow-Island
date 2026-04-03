@@ -118,11 +118,7 @@ const BannerScene = React.memo(({
 
 const styles = StyleSheet.create({
   outer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '75%',
+    ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     backgroundColor: '#050010',
   },
@@ -134,8 +130,8 @@ const styles = StyleSheet.create({
   },
   bgImage: {
     width: '100%',
-    height: '110%',
-    top: 35, // Significantly lowered to fix "head cutoff" on mobile
+    height: '100%',
+    top: 0, 
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
