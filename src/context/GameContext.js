@@ -430,7 +430,7 @@ const gameReducer = (state, action) => {
       const { currentLevel: level, hand, deck, discardPile, fear, shield } = state;
       if (!level) return state;
 
-      let newFear = Math.min(FEAR_MAX, fear + 10);
+      let newFear = Math.min(FEAR_MAX, fear + 2); // Always +2 fear as requested
       let newShield = shield;
       let msg = `Swapping cards... the tension in the air is thick.`;
       
