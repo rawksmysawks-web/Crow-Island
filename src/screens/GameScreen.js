@@ -50,12 +50,14 @@ const GameScreen = () => {
     makeChoice,
     hoverCard,
     unhoverCard,
+    setScreen,
   } = useGame();
 
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const prevStats = useRef({ fear: 0, crow: 0, clues: 0 });
   const [isSwapMode, setIsSwapMode] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lastClueFound, setLastClueFound] = useState(null);
 
   const {
@@ -235,17 +237,56 @@ const GameScreen = () => {
           />
         )}
 
+        {/* ── TOP RIGHT: MENU ── */}
+        <View style={styles.topRightControls}>
+          <TouchableOpacity 
+            style={styles.menuAnchor} 
+            onPress={() => setIsMenuOpen(!isMenuOpen)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.menuIcon}>⋮</Text>
+          </TouchableOpacity>
+
+          {isMenuOpen && (
+            <View style={styles.dropdownMenu}>
+              <TouchableOpacity 
+                style={styles.dropdownItem} 
+                onPress={() => { toggleMute(); setIsMenuOpen(false); }}
+              >
+                <Text style={{ fontSize: 20 }}>{isMuted ? '🔇' : '🔊'}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.dropdownItem} 
+                onPress={() => { setScreen('journal'); setIsMenuOpen(false); }}
+              >
+                <Text style={{ fontSize: 20 }}>📖</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.dropdownItem} 
+                onPress={() => { togglePause(); setIsMenuOpen(false); }}
+              >
+                <Image source={ICON_PAUSE} style={styles.controlIcon} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
         {/* ── BOTTOM CONSOLIDATED REGION ─────────────────────────────── */}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,1)']}
           style={styles.bottomRegion}
         >
           
-          {/* Avatar reacting to journey, hovering on the boundary */}
+          {/* Avatar reacting to journey, anchored to the top of the region */}
           <View style={styles.avatarReacting}>
-            <View style={styles.portraitWrap}>
-              <PlayerAvatar fear={fear} />
-            </View>
+            <PlayerAvatar 
+              fear={fear} 
+              isHallucinating={isHallucinating} 
+              size={64}
+              style={styles.avatarRefined}
+            />
             {(hoverMessage || cardMessage || state.jackThought) && (
               <View style={styles.thoughtBubble}>
                 <View style={styles.bubbleTail} />
@@ -308,19 +349,6 @@ const GameScreen = () => {
         />
       </Animated.View>
 
-      {/* ── TOP RIGHT CONTROLS (Rendered Last for Z-Index) ──────────── */}
-      <View style={styles.topRightControls}>
-        <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
-          <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={toggleJournal}>
-          <Text style={{ fontSize: 24 }}>📖</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={togglePause}>
-          <Image source={ICON_PAUSE} style={styles.controlIcon} />
-        </TouchableOpacity>
-      </View>
-
       {/* ── Story Popup Overlay ──────────────────────────────────────── */}
       {activeEvent && (
         <StoryPopup 
@@ -340,16 +368,40 @@ const styles = StyleSheet.create({
   },
   topRightControls: {
     position: 'absolute',
-    top: 60,
+    top: 55,
     right: 8,
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
     zIndex: 1000,
+    alignItems: 'flex-end',
   },
-  controlBtn: {
+  menuAnchor: {
     width: 42,
     height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  menuIcon: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    top: -2, // Optical centering
+  },
+  dropdownMenu: {
+    marginTop: 10,
+    backgroundColor: 'rgba(20,20,20,0.9)',
+    borderRadius: 12,
+    padding: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#444',
+    alignItems: 'center',
+  },
+  dropdownItem: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -360,21 +412,14 @@ const styles = StyleSheet.create({
   },
   avatarReacting: {
     position: 'absolute',
-    top: -95, 
+    bottom: '100%', // Stable anchor above the gradient region
     left: 20,
+    marginBottom: 10,
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 15,
-    zIndex: 400,
+    alignItems: 'flex-end',
+    zIndex: 1000,
   },
-  portraitWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 1,
-    borderColor: '#c4a484',
-    overflow: 'hidden',
-    backgroundColor: '#000',
+  avatarRefined: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,

@@ -31,7 +31,6 @@ const BannerScene = React.memo(({
   const breathRef = useRef(null);
 
   useEffect(() => {
-    // Re-initialize animation when banner changes
     fogAnim.setValue(0);
     
     if (loopRef.current) {
@@ -51,7 +50,6 @@ const BannerScene = React.memo(({
       loopRef.current.start();
     }
 
-    // Breathing scale animation
     breathRef.current = Animated.loop(
       Animated.sequence([
         Animated.timing(scaleAnim, {
@@ -76,7 +74,6 @@ const BannerScene = React.memo(({
     };
   }, [bannerKey, fogAnim, scaleAnim]);
 
-  // Handle manual pause/resume without resetting position
   useEffect(() => {
     if (isPaused) {
       if (loopRef.current) loopRef.current.stop();
@@ -92,7 +89,6 @@ const BannerScene = React.memo(({
 
   return (
     <View style={styles.outer}>
-      {/* ── Background Static Image ──────────────────────────────── */}
       <Animated.View style={[
         styles.bgContainer,
         { transform: [{ scale: scaleAnim }] }
@@ -102,12 +98,9 @@ const BannerScene = React.memo(({
           style={styles.bgImage} 
           resizeMode="cover" 
         />
-        
-        {/* Night tint overlay */}
         {phase === 'night' && <View style={styles.nightOverlay} />}
       </Animated.View>
 
-      {/* ── Atmospheric Fog (Still drifts for depth) ─────────────── */}
       <Animated.View 
         style={[
           styles.fogContainer, 
@@ -128,8 +121,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     backgroundColor: '#050010',
-    borderBottomWidth: 0,
-    borderBottomColor: '#111',
   },
   bgContainer: {
     width: '100%',
@@ -139,8 +130,8 @@ const styles = StyleSheet.create({
   },
   bgImage: {
     width: '100%',
-    height: '100%',
-    // resizeMode: 'cover' handled in component for better RN-web behavior
+    height: '110%',
+    top: 35, // Significantly lowered to fix "head cutoff" on mobile
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -160,7 +151,6 @@ const styles = StyleSheet.create({
   vignette: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'transparent',
-    // Could add gradient here later
   },
 });
 

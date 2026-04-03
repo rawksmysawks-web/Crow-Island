@@ -5,7 +5,7 @@
  * A crow silhouette pulses in the background.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ const TitleScreen = () => {
   const { startGame, state, toggleMute, setScreen } = useGame();
   const { isMuted } = state;
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const floatAnim   = useRef(new Animated.Value(0)).current;
   const fadeAnim    = useRef(new Animated.Value(0)).current;
   const titleScale  = useRef(new Animated.Value(0.85)).current;
@@ -59,14 +60,40 @@ const TitleScreen = () => {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
 
-      {/* ── Mute Toggle ────────────────────────────────────────────── */}
+      {/* ── Mute/Navigation Toggle (Consolidated) ────────────────────── */}
       <View style={styles.controlsContainer}>
-        <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
-          <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
+        <TouchableOpacity 
+          style={styles.menuAnchor} 
+          onPress={() => setIsMenuOpen(!isMenuOpen)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.menuIcon}>⋮</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.controlBtn} onPress={() => setScreen('journal')}>
-          <Text style={{ fontSize: 24 }}>📖</Text>
-        </TouchableOpacity>
+
+        {isMenuOpen && (
+          <View style={styles.dropdownMenu}>
+            <TouchableOpacity 
+              style={styles.dropdownItem} 
+              onPress={() => { toggleMute(); setIsMenuOpen(false); }}
+            >
+              <Text style={{ fontSize: 20 }}>{isMuted ? '🔇' : '🔊'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.dropdownItem} 
+              onPress={() => { setScreen('journal'); setIsMenuOpen(false); }}
+            >
+              <Text style={{ fontSize: 20 }}>📖</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.dropdownItem} 
+              onPress={() => { setScreen('instructions'); setIsMenuOpen(false); }}
+            >
+              <Text style={{ fontSize: 18, color: '#fff' }}>?</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* ── High-Res Island Background (Integrated Crow) ──────────── */}
@@ -205,14 +232,38 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     right: 8,
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
     zIndex: 200,
+    alignItems: 'flex-end',
   },
-  controlBtn: {
+  menuAnchor: {
     width: 42,
     height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  menuIcon: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    top: -2,
+  },
+  dropdownMenu: {
+    marginTop: 10,
+    backgroundColor: 'rgba(20,20,20,0.9)',
+    borderRadius: 12,
+    padding: 8,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#444',
+    alignItems: 'center',
+  },
+  dropdownItem: {
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
