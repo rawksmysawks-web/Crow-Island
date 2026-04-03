@@ -137,8 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bgImage: {
-    flex: 1,
-    width: '120%', // Slightly wider to ensure coverage during scale breathing
+    width: '100%',
     height: '100%',
     top: Platform.OS === 'web' ? 0 : -50, 
   },
