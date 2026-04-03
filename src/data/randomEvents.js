@@ -9,6 +9,7 @@ export const RANDOM_EVENTS = {
     {
       id: 'bonus_movement',
       name: 'Clear Path',
+      asset: 'event_clear_path',
       type: 'good',
       message: 'You discover a faster route. You make extra progress.',
       effect: { progressDelta: 150, fearDelta: 0, shieldDelta: 0, crowPressure: 0 }
@@ -18,8 +19,8 @@ export const RANDOM_EVENTS = {
       name: 'Supplies',
       asset: 'event_supplies',
       type: 'good',
-      message: 'You find some old supplies. The sight calms you.',
-      effect: { progressDelta: 0, fearDelta: -25, shieldDelta: 0, crowPressure: 0 }
+      message: 'You find some old supplies. The sight calms you and you find something useful.',
+      effect: { progressDelta: 0, fearDelta: -25, shieldDelta: 0, crowPressure: 0, cardRewardDelta: 1 }
     },
     {
       id: 'campfire_stumbled',
@@ -32,6 +33,7 @@ export const RANDOM_EVENTS = {
     {
       id: 'temporary_buff',
       name: 'Adrenaline',
+      asset: 'event_adrenaline',
       type: 'good',
       message: 'A sudden burst of energy. You push forward.',
       effect: { progressDelta: 120, fearDelta: -10, shieldDelta: 0, crowPressure: 0 }
@@ -45,34 +47,44 @@ export const RANDOM_EVENTS = {
       effect: { progressDelta: 0, fearDelta: 0, shieldDelta: 0, crowPressure: -5, cardRewardDelta: 1 }
     },
     {
-      id: 'extra_supplies',
+      id: 'hidden_cache_legendary',
       name: 'Hidden Cache',
-      asset: 'svg_hidden_cache',
+      asset: 'event_cache',
       type: 'good',
-      message: 'A small cache of useful items. You draw an extra card.',
-      effect: { progressDelta: 0, fearDelta: -5, shieldDelta: 0, crowPressure: 0, cardRewardDelta: 1 }
+      message: 'A legendary cache of top-tier equipment! You found something powerful.',
+      effect: { 
+        progressDelta: 0, 
+        fearDelta: -10, 
+        shieldDelta: 0, 
+        crowPressure: 0, 
+        cardRewardDelta: 1,
+        cardRewardType: 'hybrid' // Specialized reward specifically for this event
+      }
     },
     {
       id: 'safe_route',
       name: 'Hidden Path',
+      asset: 'event_hidden_path',
       type: 'good',
-      message: 'The woods offer a brief sanctuary from the eyes above.',
-      effect: { progressDelta: 130, fearDelta: -5, shieldDelta: 0, crowPressure: -20, cardRewardDelta: 0 }
+      message: 'The woods offer a brief sanctuary from the eyes above. You make safe progress.',
+      effect: { progressDelta: 150, fearDelta: -15, shieldDelta: 0, crowPressure: -20, cardRewardDelta: 0 }
     },
   ],
   bad: [
     {
       id: 'hallucination',
       name: 'Voices',
+      asset: 'event_voices',
       type: 'bad',
-      message: 'Did someone call your name? The shadows twist.',
+      message: 'Did someone call your name? The shadows twist and fear grips you.',
       effect: { progressDelta: 0, fearDelta: 25, shieldDelta: 0, crowPressure: 10 }
     },
     {
       id: 'fear_spike',
       name: 'Shadows Stretch',
+      asset: 'event_fear_spike',
       type: 'bad',
-      message: 'The dark feels suffocating. Panic rises.',
+      message: 'The dark feels suffocating. Panic rises as shadows loom.',
       effect: { progressDelta: 0, fearDelta: 35, shieldDelta: 0, crowPressure: 0 }
     },
     {

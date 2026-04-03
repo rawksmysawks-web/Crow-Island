@@ -18,6 +18,8 @@ import {
 } from 'react-native';
 import { useGame } from '../context/GameContext';
 import { LEVELS } from '../data/levels';
+import { LinearGradient } from 'expo-linear-gradient';
+import GlobalMenu from '../components/GlobalMenu';
 
 // Icons are now emojis
 
@@ -36,8 +38,8 @@ Nobody is waiting for me. I haven't seen a single soul. Only the crows watching 
 I need to find whoever sent that message before the sun goes down.`;
 
 const StoryScreen = () => {
-  const { beginLevel, state, toggleMute, setScreen, setDifficulty } = useGame();
-  const { isMuted, difficulty } = state;
+  const { beginLevel, state, setScreen, setDifficulty } = useGame();
+  const { difficulty } = state;
   const [visible, setVisible]     = useState(false);
   const fadeAnim                  = useRef(new Animated.Value(0)).current;
 
@@ -57,12 +59,7 @@ const StoryScreen = () => {
     <SafeAreaView style={styles.safe}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.topRightControls}>
-          <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
-            <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlBtn} onPress={() => setScreen('journal')}>
-            <Text style={{ fontSize: 24 }}>📖</Text>
-          </TouchableOpacity>
+          <GlobalMenu />
         </View>
 
         <View style={styles.page}>

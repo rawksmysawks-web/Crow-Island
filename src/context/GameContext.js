@@ -386,14 +386,29 @@ const gameReducer = (state, action) => {
       }
 
       let newJourneyLog = [...state.journeyLog];
-      newJourneyLog.push({ type: 'card', name: card.name || card.title, turn: newTurnCount, level: level.name });
+      newJourneyLog.push({ 
+        type: 'card', 
+        name: card.name || card.title, 
+        turn: newTurnCount, 
+        level: level.name,
+        asset: card.image || null // Track card image if specific one exists (like hybrids)
+      });
+
       if (nextEvent) {
-          newJourneyLog.push({ type: 'event', title: nextEvent.title || nextEvent.id });
+          newJourneyLog.push({ 
+            type: 'event', 
+            title: nextEvent.title || nextEvent.id,
+            asset: nextEvent.asset 
+          });
           if (newClues.length === 10 && state.clues.length === 9) {
              newJourneyLog.push({ type: 'milestone', title: 'All Evidence Gathered' });
           }
       } else if (randomEvent) {
-          newJourneyLog.push({ type: 'event', title: randomEvent.name });
+          newJourneyLog.push({ 
+            type: 'event', 
+            title: randomEvent.name,
+            asset: randomEvent.asset 
+          });
       }
 
       return {
@@ -430,7 +445,8 @@ const gameReducer = (state, action) => {
       const { currentLevel: level, hand, deck, discardPile, fear, shield } = state;
       if (!level) return state;
 
-      let newFear = Math.min(FEAR_MAX, fear + 2); // Always +2 fear as requested
+      // FIXED: Exactly +2 fear, no difficulty scaling, no random events
+      let newFear = Math.min(FEAR_MAX, fear + 2);
       let newShield = shield;
       let msg = `Swapping cards... the tension in the air is thick.`;
       
@@ -446,7 +462,10 @@ const gameReducer = (state, action) => {
 
       const newTurnCount = state.turnCount + 1;
       const afterDiscard = discardCard(hand, discardPile, cardId);
+      // NOTE: drawCards(..., false) ensures no active card effects/discovery during swap
       const afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, 1, state.difficulty !== 'hard', false);
+
+      const newJourneyLog = [...state.journeyLog, { type: 'card', name: 'Card Swapped' }];
 
       return {
         ...state,
@@ -458,6 +477,7 @@ const gameReducer = (state, action) => {
         discardPile: afterDraw.discardPile,
         cardMessage: msg,
         jackThought: "Gotta find better tools.",
+        journeyLog: newJourneyLog,
       };
     }
 

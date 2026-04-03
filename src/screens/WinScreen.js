@@ -21,6 +21,7 @@ import { useGame } from '../context/GameContext';
 import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
 import JourneyTimeline from '../components/JourneyTimeline';
 import JournalScreen from './JournalScreen';
+import GlobalMenu from '../components/GlobalMenu';
 
 const PLAYER = require('../../assets/images/player_tired.png');
 const TRUE_ENDING_BOAT = require('../../assets/images/true_ending_boat.png');
@@ -98,14 +99,7 @@ const WinScreen = () => {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: e.colour }]}>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        <View style={styles.controls}>
-          <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
-            <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlBtn} onPress={() => setShowJournal(true)}>
-            <Text style={{ fontSize: 24 }}>📖</Text>
-          </TouchableOpacity>
-        </View>
+        <GlobalMenu />
         {/* ── Image ─────────────────────────────────────────────────── */}
         <View style={styles.imageWrap}>
           <Image 

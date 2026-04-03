@@ -92,15 +92,8 @@ const GameOverScreen = () => {
       <Image source={BG_NIGHT} style={styles.bgImage} resizeMode="cover" />
       <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        {/* ── Mute Toggle ────────────────────────────────────────────── */}
-        <View style={styles.controls}>
-          <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
-            <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.controlBtn} onPress={() => setShowJournal(true)}>
-            <Text style={{ fontSize: 24 }}>📖</Text>
-          </TouchableOpacity>
-        </View>
+        {/* ── TOP RIGHT: MENU ── */}
+        <GlobalMenu />
         {/* ── Image ─────────────────────────────────────────────────── */}
         {variant.image && variant.title !== 'CONSUMED' && (
           <View style={styles.imageWrap}>

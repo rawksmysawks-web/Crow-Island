@@ -37,6 +37,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateHeartbeat, updateAmbience, playSFX, playISeeYou } from '../game/AudioManager';
 import { CLUES } from '../data/clues';
+import GlobalMenu from '../components/GlobalMenu';
+
 const GameScreen = () => {
   const {
     state,
@@ -59,7 +61,6 @@ const GameScreen = () => {
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const prevStats = useRef({ fear: 0, crow: 0, clues: 0 });
   const [isSwapMode, setIsSwapMode] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lastClueFound, setLastClueFound] = useState(null);
 
   const {
@@ -258,40 +259,7 @@ const GameScreen = () => {
         </View>
 
         {/* ── TOP RIGHT: MENU ── */}
-        <View style={[styles.topRightControls, { top: Math.max(insets.top, 40) }]}>
-          <TouchableOpacity 
-            style={styles.menuAnchor} 
-            onPress={() => setIsMenuOpen(!isMenuOpen)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.menuIcon}>⋮</Text>
-          </TouchableOpacity>
-
-          {isMenuOpen && (
-            <View style={styles.dropdownMenu}>
-              <TouchableOpacity 
-                style={styles.dropdownItem} 
-                onPress={() => { toggleMute(); setIsMenuOpen(false); }}
-              >
-                <Text style={{ fontSize: 20 }}>{isMuted ? '🔇' : '🔊'}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.dropdownItem} 
-                onPress={() => { setScreen('journal'); setIsMenuOpen(false); }}
-              >
-                <Text style={{ fontSize: 20 }}>📖</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={styles.dropdownItem} 
-                onPress={() => { togglePause(); setIsMenuOpen(false); }}
-              >
-                <Image source={ICON_PAUSE} style={styles.controlIcon} />
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
+        <GlobalMenu style={{ top: Math.max(insets.top, 40) }} />
 
         {/* ── BOTTOM CONSOLIDATED REGION ─────────────────────────────── */}
         <LinearGradient

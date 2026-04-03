@@ -11,49 +11,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, Animated, Easing, Dime
 import { useGame } from '../context/GameContext';
 import { EventSVG } from './EventSVG';
 import { playSFX, playISeeYou } from '../game/AudioManager';
+import { EVENT_ASSETS } from '../data/assets';
 
-// Asset map for event images (add more here as story expands)
-const EVENT_ASSETS = {
-  player:   require('../../assets/images/player_sprite.png'),
-  enemy:    require('../../assets/images/enemy.png'),
-  campfire: require('../../assets/images/campfire.png'),
-  scratched_floor: require('../../assets/images/start_floor.png'),
-  paper_clue: require('../../assets/images/paper_clue.png'),
-  player_tired: require('../../assets/images/player_tired.png'),
-  event_dock: require('../../assets/images/event_dock.png'),
-  event_path: require('../../assets/images/event_path.png'),
-  event_shore: require('../../assets/images/event_shore.png'),
-  event_silence: require('../../assets/images/event_silence.png'),
-  event_photo: require('../../assets/images/event_photo.png'),
-  event_tractor: require('../../assets/images/event_tractor.png'),
-  event_crows: require('../../assets/images/event_crows.png'),
-  event_shed: require('../../assets/images/event_shed.png'),
-  event_map: require('../../assets/images/event_map.png'),
-  event_scratches: require('../../assets/images/event_scratches.png'),
-  event_floorboards: require('../../assets/images/events/event_floorboards.png'),
-  event_scratching: require('../../assets/images/events/event_scratching.png'),
-  event_locket: require('../../assets/images/events/event_locket.png'),
-  event_feathers: require('../../assets/images/events/event_feathers.png'),
-  event_totem: require('../../assets/images/events/event_totem.png'),
-  event_red_sky: require('../../assets/images/events/event_red_sky.png'),
-  event_bell: require('../../assets/images/events/event_bell.png'),
-  event_old_map: require('../../assets/images/events/event_old_map.png'),
-  event_lost: require('../../assets/images/events/event_lost.png'),
-  event_first_steps: require('../../assets/images/events/event_first_steps.png'),
-  event_ash: require('../../assets/images/events/event_ash.png'),
-  event_see_it: require('../../assets/images/events/event_see_it.png'),
-  event_ledger: require('../../assets/images/events/event_ledger.png'),
-  event_script: require('../../assets/images/events/event_script.png'),
-  event_wings: require('../../assets/images/events/event_wings.png'),
-  event_message: require('../../assets/images/events/event_message.png'),
-  event_it_comes: require('../../assets/images/events/event_it_comes.png'),
-  event_stumble: require('../../assets/images/events/event_stumble.png'),
-  event_rustling: require('../../assets/images/events/event_rustling.png'),
-  event_supplies: require('../../assets/images/events/event_supplies.png'),
-};
+// Asset map for event images (now imported from assets.js)
 
-const ICON_FEAR = require('../../assets/images/icon_fear_pixel.png');
-const ICON_CROW = require('../../assets/images/icon_crow_v2.png');
+const ICON_FEAR     = require('../../assets/images/icon_fear_pixel.png');
+const ICON_PROGRESS = require('../../assets/images/icon_progress_v2.png');
+const ICON_SHIELD   = require('../../assets/images/icon_shield_v2.png');
+const ICON_CROW     = require('../../assets/images/icon_crow_v2.png');
 const ICON_JOURNAL = '📖';
 
 const StoryPopup = ({ event, onDismiss, onChoice }) => {
@@ -142,34 +107,48 @@ const StoryPopup = ({ event, onDismiss, onChoice }) => {
         <Text style={styles.body}>{event.body || event.text}</Text>
 
         {/* ── Effect hint ──────────────────────────────────────────── */}
-        {(event.fearDelta !== 0 || event.crowPressure !== 0 || event.cardRewardDelta) && (
-          <View style={styles.effectRow}>
-            {event.fearDelta > 0 && (
-              <View style={styles.effectItem}>
-                <Image source={ICON_FEAR} style={styles.effectIcon} />
-                <Text style={styles.effectDark}>+{event.fearDelta} Fear</Text>
-              </View>
-            )}
-            {event.fearDelta < 0 && (
-              <View style={styles.effectItem}>
-                <Image source={ICON_FEAR} style={styles.effectIcon} />
-                <Text style={[styles.effectDark, { color: '#2e7d32' }]}>{event.fearDelta} Fear</Text>
-              </View>
-            )}
-            {event.crowPressure > 0 && (
-              <View style={styles.effectItem}>
-                <Image source={ICON_CROW} style={styles.effectIcon} />
-                <Text style={styles.effectDark}>+{event.crowPressure} Pressure</Text>
-              </View>
-            )}
-            {event.cardRewardDelta > 0 && (
-              <View style={styles.effectItem}>
-                <Text style={{ fontSize: 14, marginRight: 4 }}>🃏</Text>
-                <Text style={[styles.effectDark, { color: '#1565c0' }]}>+{event.cardRewardDelta} Extra Card</Text>
-              </View>
-            )}
-          </View>
-        )}
+        {(() => {
+          const effects = [];
+          const fear = event.fearDelta || 0;
+          const progress = event.progressDelta || 0;
+          const shield = event.shieldDelta || 0;
+          const crow = event.crowPressure || 0;
+          const cards = event.cardRewardDelta || 0;
+
+          if (fear !== 0) {
+            effects.push({ val: `${fear > 0 ? '+' : ''}${fear}`, icon: ICON_FEAR, color: fear > 0 ? '#b71c1c' : '#2e7d32' });
+          }
+          if (progress !== 0) {
+            effects.push({ val: `${progress > 0 ? '+' : ''}${progress}`, icon: ICON_PROGRESS, color: '#1565c0' });
+          }
+          if (shield !== 0) {
+            effects.push({ val: `${shield > 0 ? '+' : ''}${shield}`, icon: ICON_SHIELD, color: '#283593' });
+          }
+          if (crow !== 0) {
+            effects.push({ val: `${crow > 0 ? '+' : ''}${crow}`, icon: ICON_CROW, color: '#ef6c00' });
+          }
+
+          return (
+            <>
+              {effects.length > 0 && (
+                <View style={styles.effectRow}>
+                  {effects.map((eff, i) => (
+                    <View key={i} style={styles.effectItem}>
+                      <Text style={[styles.effectValue, { color: eff.color }]}>{eff.val}</Text>
+                      <Image source={eff.icon} style={styles.effectIcon} />
+                    </View>
+                  ))}
+                </View>
+              )}
+              {cards > 0 && (
+                <View style={styles.effectItem}>
+                  <Text style={{ fontSize: 14, marginRight: 4 }}>🃏</Text>
+                  <Text style={[styles.effectDark, { color: '#1565c0' }]}>+{cards} Extra Card</Text>
+                </View>
+              )}
+            </>
+          );
+        })()}
 
         {/* ── Journal indicator ─────────────────────────────────────── */}
         {event.isJournal && (
@@ -327,6 +306,11 @@ const styles = StyleSheet.create({
     color: '#b71c1c',
     fontSize: 12,
     fontFamily: 'Inter_700Bold',
+  },
+  effectValue: {
+    fontSize: 12,
+    fontFamily: 'Inter_700Bold',
+    marginRight: 2,
   },
   journalNoteRow: {
     flexDirection: 'row',
