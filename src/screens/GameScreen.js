@@ -213,18 +213,16 @@ const GameScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#000" />
       
       <Animated.View style={{ flex: 1, transform: [{ translateX: shakeAnim }] }}>
-        {/* ── Animated background world (Static) ────────────────────── */}
-        <View style={StyleSheet.absoluteFill}>
-          <BannerScene 
-            phase={phase} 
-            isHallucinating={isHallucinating} 
-            fear={fear}
-            levelNumber={currentLevel.number}
-            progress={progress}
-            bannerKey={currentLevel.bannerKey}
-            isPaused={!!activeEvent}
-          />
-        </View>
+        {/* ── Animated atmospheric header ────────────────────────── */}
+        <BannerScene 
+          phase={phase} 
+          isHallucinating={isHallucinating} 
+          fear={fear}
+          levelNumber={currentLevel.number}
+          progress={progress}
+          bannerKey={currentLevel.bannerKey}
+          isPaused={!!activeEvent}
+        />
 
         {/* ── Dark overlay (reduced visibility effect) ────────────────── */}
         {isReducedVis && <View style={styles.darkOverlay} pointerEvents="none" />}

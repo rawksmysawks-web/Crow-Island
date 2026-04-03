@@ -102,7 +102,6 @@ const WinScreen = () => {
       <View style={StyleSheet.absoluteFill}>
         <BannerScene bannerKey="pano_escape" phase="day" />
       </View>
-      <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <GlobalMenu />
         {/* ── Image ─────────────────────────────────────────────────── */}
@@ -188,10 +187,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     justifyContent: 'center',
-  },
-  bgScrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 8, 20, 0.75)',
   },
   container: {
     alignItems: 'center',

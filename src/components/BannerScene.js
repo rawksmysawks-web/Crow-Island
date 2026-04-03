@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const BANNER_HEIGHT = SCREEN_HEIGHT * 0.42; // Restore perfect header height (42%)
 const FOG_OVERLAY = require('../../assets/images/fog_overlay.png');
 
 const BACKGROUNDS = {
@@ -29,11 +30,6 @@ const BannerScene = React.memo(({
   bannerKey     = 'arrival',
   isPaused      = false,
 }) => {
-  const fogAnim   = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const loopRef   = useRef(null);
-  const breathRef = useRef(null);
-
   useEffect(() => {
     fogAnim.setValue(0);
     
@@ -54,37 +50,16 @@ const BannerScene = React.memo(({
       loopRef.current.start();
     }
 
-    breathRef.current = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.05,
-          duration: 20000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1.0,
-          duration: 20000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    if (!isPaused) breathRef.current.start();
-
     return () => {
       if (loopRef.current) loopRef.current.stop();
-      if (breathRef.current) breathRef.current.stop();
     };
-  }, [bannerKey, fogAnim, scaleAnim]);
+  }, [bannerKey, fogAnim]);
 
   useEffect(() => {
     if (isPaused) {
       if (loopRef.current) loopRef.current.stop();
-      if (breathRef.current) breathRef.current.stop();
     } else {
       if (loopRef.current) loopRef.current.start();
-      if (breathRef.current) breathRef.current.start();
     }
   }, [isPaused]);
 
@@ -93,17 +68,14 @@ const BannerScene = React.memo(({
 
   return (
     <View style={styles.outer}>
-      <Animated.View style={[
-        styles.bgContainer,
-        { transform: [{ scale: scaleAnim }] }
-      ]}>
+      <View style={styles.bgContainer}>
         <Image 
           source={bgSource} 
           style={styles.bgImage} 
           resizeMode="cover" 
         />
         {phase === 'night' && <View style={styles.nightOverlay} />}
-      </Animated.View>
+      </View>
 
       <Animated.View 
         style={[
@@ -126,20 +98,20 @@ const BannerScene = React.memo(({
 
 const styles = StyleSheet.create({
   outer: {
-    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: BANNER_HEIGHT,
     overflow: 'hidden',
     backgroundColor: '#050010',
+    borderBottomWidth: 0,
+    borderBottomColor: '#111',
   },
   bgContainer: {
     width: '100%',
-    minHeight: '120%', 
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    height: '100%',
   },
   bgImage: {
     width: '100%',
     height: '100%',
-    top: Platform.OS === 'web' ? 0 : -50, 
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
@@ -154,7 +126,7 @@ const styles = StyleSheet.create({
   },
   fogImage: {
     width: SCREEN_WIDTH,
-    height: '100%',
+    height: BANNER_HEIGHT,
   },
   vignette: {
     ...StyleSheet.absoluteFillObject,

@@ -131,10 +131,12 @@ const GameOverScreen = () => {
         <Text style={styles.body}>{variant.body}</Text>
 
         {/* ── Time of Death ────────────────────────────────────────── */}
-        {currentLevel && (
+        {currentLevel && typeof formatInGameTime === 'function' ? (
           <Text style={styles.levelIndicator}>
             Time of Death: {formatInGameTime(currentLevel.phase, state.progress)} — {currentLevel.name}
           </Text>
+        ) : (
+          <Text style={styles.levelIndicator}>Time of Death: Unknown — Island Secrets</Text>
         )}
 
         {/* ── Retry & Journey ─────────────────────────────────────────── */}
