@@ -130,8 +130,8 @@ const styles = StyleSheet.create({
   },
   bgImage: {
     width: '100%',
-    height: '100%',
-    top: 0, 
+    height: '115%',
+    top: -50, 
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
