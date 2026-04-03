@@ -13,6 +13,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const FOG_OVERLAY = require('../../assets/images/fog_overlay.png');
 
 const BACKGROUNDS = {
+  pano_title:   require('../../assets/images/title_bg_v3.png'),
   pano_arrival: require('../../assets/images/sc_arrival_v7.png'),
   pano_farms:   require('../../assets/images/sc_farms_v8.png'),
   pano_shed:    require('../../assets/images/sc_shed_v8.png'),
@@ -85,7 +86,7 @@ const BannerScene = React.memo(({
     }
   }, [isPaused]);
 
-  const scene = bannerKey in BACKGROUNDS ? bannerKey : 'pano_arrival';
+  const scene = bannerKey in BACKGROUNDS ? bannerKey : 'pano_title';
   const bgSource = BACKGROUNDS[scene];
 
   return (

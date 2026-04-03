@@ -17,6 +17,7 @@ import {
   Image
 } from 'react-native';
 import { useGame } from '../context/GameContext';
+import BannerScene from '../components/BannerScene';
 
 const LevelIntroScreen = () => {
   const { state, nextLevel, toggleMute } = useGame();
@@ -39,6 +40,12 @@ const LevelIntroScreen = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey={currentLevel?.bannerKey || 'pano_arrival'} phase={currentLevel?.phase || 'day'} />
+      </View>
+      <View style={styles.bgScrim} />
+
       <View style={styles.topRightControls}>
         <TouchableOpacity style={styles.controlBtn} onPress={toggleMute}>
           <Text style={{ fontSize: 24 }}>{isMuted ? '🔇' : '🔊'}</Text>
@@ -92,6 +99,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#03000d',
     justifyContent: 'center',
+  },
+  bgScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(3, 0, 13, 0.72)',
   },
   container: {
     paddingHorizontal: 28,

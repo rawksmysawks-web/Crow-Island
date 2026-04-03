@@ -20,6 +20,8 @@ import { useGame } from '../context/GameContext';
 import { LEVELS } from '../data/levels';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlobalMenu from '../components/GlobalMenu';
+import BannerScene from '../components/BannerScene';
+
 
 // Icons are now emojis
 
@@ -57,6 +59,12 @@ const StoryScreen = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey="pano_arrival" phase="day" />
+      </View>
+      <View style={styles.bgScrim} />
+
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <View style={styles.topRightControls}>
           <GlobalMenu />
@@ -122,6 +130,10 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#1a1a1a',
+  },
+  bgScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
   container: {
     flex: 1,

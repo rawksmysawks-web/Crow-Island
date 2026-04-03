@@ -18,9 +18,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
-import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
 import JourneyTimeline from '../components/JourneyTimeline';
 import JournalScreen from './JournalScreen';
+import BannerScene from '../components/BannerScene';
 import GlobalMenu from '../components/GlobalMenu';
 
 const PLAYER = require('../../assets/images/player_tired.png');
@@ -98,6 +98,11 @@ const WinScreen = () => {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: e.colour }]}>
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey="pano_escape" phase="day" />
+      </View>
+      <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <GlobalMenu />
         {/* ── Image ─────────────────────────────────────────────────── */}
@@ -183,6 +188,10 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     justifyContent: 'center',
+  },
+  bgScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 8, 20, 0.75)',
   },
   container: {
     alignItems: 'center',

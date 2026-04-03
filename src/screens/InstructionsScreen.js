@@ -8,6 +8,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
+import BannerScene from '../components/BannerScene';
+
 
 const InstructionsScreen = ({ onClose }) => {
   const { state, setScreen } = useGame();
@@ -43,6 +45,12 @@ const InstructionsScreen = ({ onClose }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey="pano_title" />
+      </View>
+      <View style={styles.bgScrim} />
+
       <View style={styles.container}>
         <View style={styles.paper}>
           <Text style={styles.header}>Dispatch Handbook</Text>
@@ -99,6 +107,10 @@ const InstructionsScreen = ({ onClose }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#000' },
+  bgScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  },
   container: { flex: 1, padding: 20, justifyContent: 'center' },
   paper: {
     backgroundColor: '#f4e4bc',

@@ -18,10 +18,10 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
-import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
-import { formatInGameTime } from '../game/TimeSystem';
 import JourneyTimeline from '../components/JourneyTimeline';
 import JournalScreen from './JournalScreen';
+import BannerScene from '../components/BannerScene';
+import GlobalMenu from '../components/GlobalMenu';
 
 const CROW     = require('../../assets/images/capture_screen_entity.png');
 const PLAYER   = require('../../assets/images/player_tired.png');
@@ -88,8 +88,10 @@ const GameOverScreen = () => {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: variant.colour }]}>
-      {/* ── Night background ─────────────────────────────────────────── */}
-      <Image source={BG_NIGHT} style={styles.bgImage} resizeMode="cover" />
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey={currentLevel?.bannerKey || 'pano_night'} phase="night" />
+      </View>
       <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         {/* ── TOP RIGHT: MENU ── */}

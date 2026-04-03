@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
 import { LEVELS } from '../data/levels';
+import BannerScene from '../components/BannerScene';
 
 const TITLE_BG = require('../../assets/images/title_bg_v3.png');
 
@@ -99,7 +100,9 @@ const TitleScreen = () => {
       </View>
 
       {/* ── High-Res Island Background (Integrated Crow) ──────────── */}
-      <Image source={TITLE_BG} style={styles.bgImage} resizeMode="cover" />
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey="pano_title" />
+      </View>
       <View style={styles.bgScrim} />
 
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
