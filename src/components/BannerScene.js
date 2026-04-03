@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#050010',
     borderBottomWidth: 0,
     borderBottomColor: '#111',
-    position: 'relative',
   },
   bgContainer: {
     width: '100%',
