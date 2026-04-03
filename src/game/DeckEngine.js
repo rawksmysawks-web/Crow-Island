@@ -55,7 +55,7 @@ export const initializeGameDeck = (firstLevel, deckSize = 30) => {
  * @param {boolean}  allowDiscovery — if true, rolls for 10% shield discovery
  * @returns {{ deck: object[], hand: object[], discardPile: object[] }}
  */
-export const drawCards = (deck, hand, discardPile, n = 1, allowDiscovery = false) => {
+export const drawCards = (deck, hand, discardPile, n = 1, allowReshuffle = true, allowDiscovery = false) => {
   let newDeck = [...deck];
   let newDiscard = [...discardPile];
   const drawn = [];
@@ -63,7 +63,14 @@ export const drawCards = (deck, hand, discardPile, n = 1, allowDiscovery = false
   const SHIELD_DISCOVERY_CHANCE = 0.10; // 10% chance to find a shield on draw
 
   for (let i = 0; i < n; i++) {
-    if (newDeck.length === 0) break;
+    if (newDeck.length === 0) {
+      if (allowReshuffle && newDiscard.length > 0) {
+        newDeck = shuffle(newDiscard);
+        newDiscard = [];
+      } else {
+        break; // Truly out of cards or reshuffle disabled
+      }
+    }
     
     let card = newDeck.shift();
 

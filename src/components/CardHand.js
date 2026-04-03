@@ -33,8 +33,7 @@ const CardHand = ({ hand = [], onPlay, onDraw, deckCount = 0, canDraw = true, is
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={styles.header}>
         <View style={styles.titleArea}>
-          <Text style={styles.handTitle}>YOUR HAND</Text>
-          <Text style={styles.deckCount}>{deckCount} cards left</Text>
+          <Text style={styles.handTitle}>CARDS LEFT: {deckCount}</Text>
         </View>
 
         <View style={styles.actionRowContainer}>

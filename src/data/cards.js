@@ -142,6 +142,7 @@ export const HYBRID_CARDS = [
     name: 'Ultra Bright Torch',
     type: 'shield', // Treated visually as a shield card
     rarity: 'legendary',
+    image: require('../../assets/images/cards/card_art_torch.png'),
     description: 'Dazzle whatever is crossing your path. Progress, defend, and calm down.',
     flavorText: '"The halogen beam briefly blinded whatever was waiting in the shadows."',
     effect: { fearDelta: -15, progressDelta: 50, shieldDelta: 1, crowPressure: -20, special: null },
@@ -151,6 +152,7 @@ export const HYBRID_CARDS = [
     name: 'Adrenaline Surge',
     type: 'movement', // Treated visually as a movement card
     rarity: 'legendary',
+    image: require('../../assets/images/cards/card_art_adrenaline.png'),
     description: 'A burst of terrified speed. Massive progress without the panic.',
     flavorText: '"His heart hammered, but his legs knew exactly what to do."',
     effect: { fearDelta: -10, progressDelta: 800, shieldDelta: 0, crowPressure: -5, special: null },
@@ -170,8 +172,8 @@ export const getCardById = (id) => ALL_CARDS.find((c) => c.id === id);
  * HARDCORE RULES:
  * - Exactly 1 'move_reckless' (Legendary)
  * - Exactly 1 Shield card (user choice)
+ * - Exactly 1 Hybrid Card (Legendary)
  * - High density of Movement cards
- * - Trace Sanity Relief
  */
 export const buildGlobalDeck = (deckSize = 30) => {
   const deck = [];
@@ -184,14 +186,18 @@ export const buildGlobalDeck = (deckSize = 30) => {
   const startingShield = SHIELD_CARDS[Math.floor(Math.random() * SHIELD_CARDS.length)];
   deck.push({ ...startingShield });
 
-  // 3. High Density Movement (Remaining up to 23 total movement/legendary/shield)
+  // 3. Guaranteed Hybrid Card (Exactly 1)
+  const hybrid = HYBRID_CARDS[Math.floor(Math.random() * HYBRID_CARDS.length)];
+  deck.push({ ...hybrid });
+
+  // 4. High Density Movement (Remaining up to 75% total movement/legendary/shield)
   const movePool = MOVEMENT_CARDS.filter(c => c.id !== 'move_reckless');
   while (deck.length < Math.floor(deckSize * 0.75)) { 
     const m = movePool[Math.floor(Math.random() * movePool.length)];
     deck.push({ ...m });
   }
 
-  // 4. Trace Sanity Relief (Remainder filled with common cards)
+  // 5. Trace Sanity Relief (Remainder filled with common cards)
   const commonPool = [...movePool, ...LIGHT_CARDS.filter(c => c.rarity === 'common')];
   while (deck.length < deckSize) {
     const c = commonPool[Math.floor(Math.random() * commonPool.length)];

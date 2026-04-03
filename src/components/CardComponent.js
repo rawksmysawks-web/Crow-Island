@@ -230,7 +230,7 @@ const CardComponent = ({ card, onPlay, onSwap, onHoverIn, onHoverOut, disabled =
         {theme.image && (
            <View style={styles.artContainer}>
              <Image 
-               source={theme.image} 
+               source={card.image || theme.image} 
                style={[
                  styles.cardArt, 
                  card.type === 'dark' && { transform: [{ scale: 1.15 }] }

@@ -227,10 +227,10 @@ const gameReducer = (state, action) => {
           discardPile: afterDiscard.discardPile,
         };
         if (cardsToDraw > 1) {
-          afterDraw = drawCards(afterDraw.deck, afterDraw.hand, afterDraw.discardPile, cardsToDraw - 1, false);
+          afterDraw = drawCards(afterDraw.deck, afterDraw.hand, afterDraw.discardPile, cardsToDraw - 1, state.difficulty !== 'hard', false);
         }
       } else if (cardsToDraw > 0) {
-        afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, cardsToDraw, false);
+      afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, cardsToDraw, state.difficulty !== 'hard', false);
       } else {
         afterDraw = {
           deck: afterDiscard.deck ?? deck,
@@ -420,7 +420,7 @@ const gameReducer = (state, action) => {
 
     // ── DRAW_CARDS ────────────────────────────────────────────────────────────
     case 'DRAW_CARDS': {
-      const result = drawCards(state.deck, state.hand, state.discardPile, action.n ?? 1, false);
+      const result = drawCards(state.deck, state.hand, state.discardPile, action.n ?? 1, state.difficulty !== 'hard', false);
       return { ...state, ...result };
     }
 
@@ -446,7 +446,7 @@ const gameReducer = (state, action) => {
 
       const newTurnCount = state.turnCount + 1;
       const afterDiscard = discardCard(hand, discardPile, cardId);
-      const afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, 1, false);
+      const afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, 1, state.difficulty !== 'hard', false);
 
       return {
         ...state,
@@ -494,7 +494,7 @@ const gameReducer = (state, action) => {
         }
       }
       
-      const afterDraw = drawCards(deck, hand, discardPile, 1, false);
+      const afterDraw = drawCards(deck, hand, discardPile, 1, state.difficulty !== 'hard', false);
       const newTurnCount = state.turnCount + 1;
 
       return {
