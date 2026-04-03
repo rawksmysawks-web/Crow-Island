@@ -8,6 +8,8 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const FOG_OVERLAY = require('../../assets/images/fog_overlay.png');
@@ -113,7 +115,11 @@ const BannerScene = React.memo(({
         <Image source={FOG_OVERLAY} style={styles.fogImage} resizeMode="repeat" />
       </Animated.View>
 
-      <View style={styles.vignette} />
+      <LinearGradient 
+        colors={['rgba(0,0,0,0.75)', 'transparent', 'rgba(0,0,0,0.75)']}
+        style={styles.vignette} 
+        pointerEvents="none"
+      />
     </View>
   );
 });
@@ -132,7 +138,7 @@ const styles = StyleSheet.create({
   },
   bgImage: {
     width: '100%',
-    aspectRatio: 1, 
+    height: '100%',
     top: Platform.OS === 'web' ? 0 : -50, 
   },
   nightOverlay: {

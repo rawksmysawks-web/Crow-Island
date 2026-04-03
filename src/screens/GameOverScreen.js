@@ -16,12 +16,18 @@ import {
   Animated,
   Easing,
   SafeAreaView,
+  Dimensions,
+  Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useGame } from '../context/GameContext';
+import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
+import { formatInGameTime } from '../game/TimeSystem';
 import JourneyTimeline from '../components/JourneyTimeline';
 import JournalScreen from './JournalScreen';
 import BannerScene from '../components/BannerScene';
 import GlobalMenu from '../components/GlobalMenu';
+
 
 const CROW     = require('../../assets/images/capture_screen_entity.png');
 const PLAYER   = require('../../assets/images/player_tired.png');
@@ -92,7 +98,6 @@ const GameOverScreen = () => {
       <View style={StyleSheet.absoluteFill}>
         <BannerScene bannerKey={currentLevel?.bannerKey || 'pano_night'} phase="night" />
       </View>
-      <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         {/* ── TOP RIGHT: MENU ── */}
         <GlobalMenu />
@@ -180,9 +185,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bgImage: {
-    position: 'absolute',
-    top: 0, left: 0,
-    width: '100%', height: '100%',
+    width: '100%',
+    height: '100%',
+    top: Platform.OS === 'web' ? 0 : -50, 
   },
   bgScrim: {
     position: 'absolute',
