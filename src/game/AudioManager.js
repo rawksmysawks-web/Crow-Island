@@ -45,6 +45,7 @@ let preloadedSFX = {};
 let hasPlayedISeeYou = false;
 let globalMuted = false;
 let ambientCawTimer = null;
+let isInitialized = false;
 
 // --- Initialize ---
 const createLoopedSound = async (source, volume = 0.5) => {
@@ -62,6 +63,9 @@ const createLoopedSound = async (source, volume = 0.5) => {
 };
 
 export const initAudio = async () => {
+  if (isInitialized) return;
+  console.log('--- AUDIO: Initializing System ---');
+  
   await Audio.setAudioModeAsync({
     allowsRecordingIOS: false,
     playsInSilentModeIOS: true,
@@ -88,6 +92,7 @@ export const initAudio = async () => {
       const { sound } = await Audio.Sound.createAsync(item.source);
       preloadedSFX[item.key] = sound;
     }
+    isInitialized = true;
     console.log('--- AUDIO: Finished Preloading SFX ---');
   } catch (err) {
     console.error('Audio: Failed to preload SFX', err);

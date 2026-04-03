@@ -10,6 +10,7 @@ import { View, ActivityIndicator, StyleSheet, Dimensions, Platform } from 'react
 import ErrorBoundary from './src/ErrorBoundary';
 import { GameProvider } from './src/context/GameContext';
 import MainNavigation from './src/MainNavigation';
+import { initAudio } from './src/game/AudioManager';
 const IS_WEB = Platform.OS === 'web';
 
 export default function App() {
@@ -20,6 +21,10 @@ export default function App() {
     Inter_700Bold,
     IndieFlower_400Regular,
   });
+
+  React.useEffect(() => {
+    initAudio();
+  }, []);
 
   if (!fontsLoaded) {
     return (
@@ -59,6 +64,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         boxShadow: '0 0 50px rgba(0,0,0,0.8)',
+        height: '100dvh', // Use dynamic viewport height to prevent squashing on mobile web
       }
     })
   },

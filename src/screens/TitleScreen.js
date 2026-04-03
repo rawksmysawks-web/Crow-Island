@@ -81,7 +81,13 @@ const TitleScreen = () => {
         </Animated.View>
 
         {/* ── Begin button ────────────────────────────────────────────── */}
-        <TouchableOpacity style={styles.beginButton} onPress={startGame}>
+        <TouchableOpacity 
+          style={styles.beginButton} 
+          onPress={() => {
+            // First click on web "unlocks" the audio context
+            startGame();
+          }}
+        >
           <Text style={styles.beginText}>BEGIN</Text>
         </TouchableOpacity>
 
