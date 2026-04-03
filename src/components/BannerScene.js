@@ -6,6 +6,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Platform,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   bgImage: {
     width: '100%',
     aspectRatio: 1, 
-    top: -50, 
+    top: Platform.OS === 'web' ? 0 : -50, 
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,

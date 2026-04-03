@@ -240,7 +240,7 @@ const GameScreen = () => {
         )}
         
         {/* ── TOP LEFT: AVATAR ── */}
-        <View style={[styles.avatarReacting, { top: Math.max(insets.top, 50) }]}>
+        <View style={[styles.avatarReacting, { top: Math.max(insets.top, 40) }]}>
           <PlayerAvatar 
             fear={fear} 
             isHallucinating={isHallucinating} 
@@ -258,7 +258,7 @@ const GameScreen = () => {
         </View>
 
         {/* ── TOP RIGHT: MENU ── */}
-        <View style={[styles.topRightControls, { top: Math.max(insets.top, 50) }]}>
+        <View style={[styles.topRightControls, { top: Math.max(insets.top, 40) }]}>
           <TouchableOpacity 
             style={styles.menuAnchor} 
             onPress={() => setIsMenuOpen(!isMenuOpen)}
