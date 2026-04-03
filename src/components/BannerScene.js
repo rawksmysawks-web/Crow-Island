@@ -30,6 +30,9 @@ const BannerScene = React.memo(({
   bannerKey     = 'arrival',
   isPaused      = false,
 }) => {
+  const fogAnim = useRef(new Animated.Value(0)).current;
+  const loopRef = useRef(null);
+
   useEffect(() => {
     fogAnim.setValue(0);
     
