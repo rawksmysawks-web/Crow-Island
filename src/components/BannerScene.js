@@ -9,8 +9,6 @@ import {
 } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BANNER_HEIGHT = SCREEN_HEIGHT * 0.70; // Approx 70% of screen height for the story header
-
 const FOG_OVERLAY = require('../../assets/images/fog_overlay.png');
 
 const BACKGROUNDS = {
@@ -102,11 +100,10 @@ const BannerScene = React.memo(({
 
 const styles = StyleSheet.create({
   outer: {
-    width: '100%',
-    height: BANNER_HEIGHT,
+    ...StyleSheet.absoluteFillObject,
     overflow: 'hidden',
     backgroundColor: '#050010',
-    borderBottomWidth: 2,
+    borderBottomWidth: 0,
     borderBottomColor: '#111',
     position: 'relative',
   },
@@ -131,7 +128,7 @@ const styles = StyleSheet.create({
   },
   fogImage: {
     width: SCREEN_WIDTH,
-    height: BANNER_HEIGHT,
+    height: '100%',
   },
   vignette: {
     ...StyleSheet.absoluteFillObject,

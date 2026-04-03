@@ -33,6 +33,7 @@ import PlayerAvatar from '../components/PlayerAvatar';
 import CardHand from '../components/CardHand';
 import StoryPopup from '../components/StoryPopup';
 import DiscoveryToast from '../components/DiscoveryToast';
+import { LinearGradient } from 'expo-linear-gradient';
 import { updateHeartbeat, updateAmbience, playSFX, playISeeYou } from '../game/AudioManager';
 import { CLUES } from '../data/clues';
 const GameScreen = () => {
@@ -235,7 +236,10 @@ const GameScreen = () => {
         )}
 
         {/* ── BOTTOM CONSOLIDATED REGION ─────────────────────────────── */}
-        <View style={styles.bottomRegion}>
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.85)', 'rgba(0,0,0,1)']}
+          style={styles.bottomRegion}
+        >
           
           {/* Avatar reacting to journey, hovering on the boundary */}
           <View style={styles.avatarReacting}>
@@ -295,7 +299,7 @@ const GameScreen = () => {
             onHoverCard={hoverCard}
             onUnhoverCard={unhoverCard}
           />
-        </View>
+        </LinearGradient>
 
         <DiscoveryToast 
           visible={!!lastClueFound} 
@@ -432,10 +436,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    borderTopWidth: 2,
-    borderTopColor: '#222',
-    paddingTop: 10, // Reduced because CardHand now has its own internal headroom
+    borderTopWidth: 0, // Remove solid border for seamless blending
+    paddingTop: 30, // Extra headroom for the transparent fade
     paddingBottom: 20,
     overflow: 'visible', 
     zIndex: 300,
