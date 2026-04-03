@@ -312,6 +312,10 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     marginRight: 2,
   },
+  journalNoteEmoji: {
+    fontSize: 16,
+    marginRight: 6,
+  },
   journalNoteRow: {
     flexDirection: 'row',
     alignItems: 'center',
