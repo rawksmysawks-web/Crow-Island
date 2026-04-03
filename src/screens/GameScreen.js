@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   topRightControls: {
     position: 'absolute',
     top: 60,
-    right: 20,
+    right: 8,
     flexDirection: 'column',
     alignItems: 'center',
     gap: 15,
@@ -392,7 +392,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderWidth: 1.5,
     borderColor: '#c4a484',
-    maxWidth: 280,
+    maxWidth: 220,
     shadowColor: '#000',
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.4,

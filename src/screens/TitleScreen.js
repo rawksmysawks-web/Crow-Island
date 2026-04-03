@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   controlsContainer: {
     position: 'absolute',
     top: 50,
-    right: 30,
+    right: 8,
     flexDirection: 'column',
     alignItems: 'center',
     gap: 15,
