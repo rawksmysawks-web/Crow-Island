@@ -295,8 +295,8 @@ const GameScreen = () => {
 
         {/* ── BOTTOM CONSOLIDATED REGION ─────────────────────────────── */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.05)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
-          locations={[0, 0.7, 0.9, 1]}
+          colors={['transparent', 'rgba(0,0,0,0.1)', 'rgba(0,0,0,0.95)', 'rgba(0,0,0,1)']}
+          locations={[0, 0.35, 0.45, 1]}
           style={[styles.bottomRegion, { paddingBottom: Math.max(insets.bottom, 20) }]}
         >
           {/* Unified Info Block (Location + Bars + Fear) */}
