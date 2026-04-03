@@ -91,7 +91,7 @@ const BannerScene = React.memo(({
       </Animated.View>
 
       <LinearGradient 
-        colors={['rgba(0,0,0,0.75)', 'transparent', 'rgba(0,0,0,0.75)']}
+        colors={['rgba(0,0,0,0.45)', 'transparent', 'rgba(0,0,0,0.45)']}
         style={styles.vignette} 
         pointerEvents="none"
       />
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: SCREEN_WIDTH * 2,
     flexDirection: 'row',
-    opacity: 0.35, 
+    opacity: 0.18, 
     zIndex: 90, 
   },
   fogImage: {
