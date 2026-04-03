@@ -125,13 +125,13 @@ const styles = StyleSheet.create({
   bgContainer: {
     width: '100%',
     minHeight: '120%', 
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
   },
   bgImage: {
     width: '100%',
     aspectRatio: 1, 
-    top: 0, 
+    top: -50, 
   },
   nightOverlay: {
     ...StyleSheet.absoluteFillObject,
