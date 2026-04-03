@@ -34,6 +34,7 @@ import CardHand from '../components/CardHand';
 import StoryPopup from '../components/StoryPopup';
 import DiscoveryToast from '../components/DiscoveryToast';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateHeartbeat, updateAmbience, playSFX, playISeeYou } from '../game/AudioManager';
 import { CLUES } from '../data/clues';
 const GameScreen = () => {
@@ -53,6 +54,7 @@ const GameScreen = () => {
     setScreen,
   } = useGame();
 
+  const insets = useSafeAreaInsets();
   const pulseAnim = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
   const prevStats = useRef({ fear: 0, crow: 0, clues: 0 });
@@ -238,7 +240,7 @@ const GameScreen = () => {
         )}
 
         {/* ── TOP RIGHT: MENU ── */}
-        <View style={styles.topRightControls}>
+        <View style={[styles.topRightControls, { top: Math.max(insets.top, 50) }]}>
           <TouchableOpacity 
             style={styles.menuAnchor} 
             onPress={() => setIsMenuOpen(!isMenuOpen)}
@@ -277,7 +279,7 @@ const GameScreen = () => {
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.05)', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,1)']}
           locations={[0, 0.7, 0.9, 1]}
-          style={styles.bottomRegion}
+          style={[styles.bottomRegion, { paddingBottom: Math.max(insets.bottom, 20) }]}
         >
           
           {/* Avatar reacting to journey, anchored to the top of the region */}
@@ -369,7 +371,6 @@ const styles = StyleSheet.create({
   },
   topRightControls: {
     position: 'absolute',
-    top: 55,
     right: 8,
     zIndex: 1000,
     alignItems: 'flex-end',

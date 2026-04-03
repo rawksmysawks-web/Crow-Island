@@ -11,6 +11,7 @@ import ErrorBoundary from './src/ErrorBoundary';
 import { GameProvider } from './src/context/GameContext';
 import MainNavigation from './src/MainNavigation';
 import { initAudio } from './src/game/AudioManager';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 const IS_WEB = Platform.OS === 'web';
 
 export default function App() {
@@ -38,9 +39,11 @@ export default function App() {
     <ErrorBoundary>
       <View style={styles.rootContainer}>
         <View style={styles.mobileFrame}>
-          <GameProvider>
-            <MainNavigation />
-          </GameProvider>
+          <SafeAreaProvider>
+            <GameProvider>
+              <MainNavigation />
+            </GameProvider>
+          </SafeAreaProvider>
         </View>
       </View>
     </ErrorBoundary>

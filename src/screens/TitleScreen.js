@@ -17,6 +17,7 @@ import {
   SafeAreaView,
   StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
 import { LEVELS } from '../data/levels';
 
@@ -25,6 +26,7 @@ const TITLE_BG = require('../../assets/images/title_bg_v3.png');
 const TitleScreen = () => {
   const { startGame, state, toggleMute, setScreen } = useGame();
   const { isMuted } = state;
+  const insets = useSafeAreaInsets();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const floatAnim   = useRef(new Animated.Value(0)).current;
@@ -61,7 +63,7 @@ const TitleScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#000" />
 
       {/* ── Mute/Navigation Toggle (Consolidated) ────────────────────── */}
-      <View style={styles.controlsContainer}>
+      <View style={[styles.controlsContainer, { top: Math.max(insets.top, 50) }]}>
         <TouchableOpacity 
           style={styles.menuAnchor} 
           onPress={() => setIsMenuOpen(!isMenuOpen)}
@@ -230,7 +232,6 @@ const styles = StyleSheet.create({
   },
   controlsContainer: {
     position: 'absolute',
-    top: 50,
     right: 8,
     zIndex: 200,
     alignItems: 'flex-end',

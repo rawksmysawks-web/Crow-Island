@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Text, StyleSheet, View, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DiscoveryToast = ({ message, visible, onHide }) => {
+  const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -26,7 +28,11 @@ const DiscoveryToast = ({ message, visible, onHide }) => {
   if (!visible) return null;
 
   return (
-    <Animated.View style={[styles.container, { transform: [{ translateY: slideAnim }], opacity: opacityAnim }]}>
+    <Animated.View style={[
+      styles.container, 
+      { top: Math.max(insets.top, 50) },
+      { transform: [{ translateY: slideAnim }], opacity: opacityAnim }
+    ]}>
       <View style={styles.toast}>
         <View style={styles.iconContainer}>
           <Image source={require('../../assets/images/paper_clue.png')} style={styles.icon} />
@@ -43,7 +49,6 @@ const DiscoveryToast = ({ message, visible, onHide }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 50,
     alignSelf: 'center',
     zIndex: 9999,
   },
