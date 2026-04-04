@@ -33,17 +33,14 @@ const GlobalMenu = ({ style }) => {
             style={styles.dropdownItem} 
             onPress={() => { toggleMute(); setIsOpen(false); }}
           >
-            <Image 
-              source={isMuted ? ICON_SPEAKER_OFF : ICON_SPEAKER_ON} 
-              style={styles.controlIcon} 
-            />
+            <Text style={styles.fallbackIcon}>{isMuted ? '🔇' : '🔊'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.dropdownItem} 
             onPress={() => { setScreen('journal'); setIsOpen(false); }}
           >
-            <Image source={ICON_JOURNAL} style={styles.controlIcon} />
+            <Text style={styles.fallbackIcon}>📖</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 

@@ -31,7 +31,7 @@ const PauseScreen = () => {
       <View style={styles.popup}>
         {/* ── Header ────────────────────────────────────────────────── */}
         <View style={styles.headerRow}>
-          <Image source={ICON_PAUSE} style={styles.headerIcon} />
+          <Text style={{ fontSize: 24, marginRight: 8 }}>⏸️</Text>
           <Text style={styles.title}>PAUSED</Text>
         </View>
 

@@ -79,21 +79,21 @@ const TitleScreen = () => {
               style={styles.dropdownItem} 
               onPress={() => { toggleMute(); setIsMenuOpen(false); }}
             >
-              <Text style={{ fontSize: 20 }}>{isMuted ? '🔇' : '🔊'}</Text>
+              <Text style={{ fontSize: 22 }}>{isMuted ? '🔇' : '🔊'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.dropdownItem} 
               onPress={() => { setScreen('journal'); setIsMenuOpen(false); }}
             >
-              <Text style={{ fontSize: 20 }}>📖</Text>
+              <Text style={{ fontSize: 22 }}>📖</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={styles.dropdownItem} 
               onPress={() => { setScreen('instructions'); setIsMenuOpen(false); }}
             >
-              <Text style={{ fontSize: 18, color: '#fff' }}>?</Text>
+              <Text style={styles.helpIconText}>?</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -252,8 +252,13 @@ const styles = StyleSheet.create({
   menuIcon: {
     color: '#fff',
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     top: -2,
+  },
+  helpIconText: {
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 18,
+    color: '#fff',
   },
   dropdownMenu: {
     marginTop: 10,

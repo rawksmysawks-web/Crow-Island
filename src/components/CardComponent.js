@@ -67,7 +67,7 @@ const TYPE_THEME = {
     text: '#e8eaf6', 
     badge: '#8c9eff', 
     label: 'SHIELD',
-    image: require('../../assets/images/cards/card_art_shield.png'),
+    image: require('../../assets/images/cards/card_shield.png'),
   },
   dark: {
     frame: '#212121', 

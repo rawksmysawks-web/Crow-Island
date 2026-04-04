@@ -20,7 +20,7 @@ import { useGame } from '../context/GameContext';
 import BannerScene from '../components/BannerScene';
 
 const LevelIntroScreen = () => {
-  const { state, nextLevel, toggleMute } = useGame();
+  const { state, beginLevel, toggleMute } = useGame();
   const { currentLevel, isMuted } = state;
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
@@ -84,7 +84,10 @@ const LevelIntroScreen = () => {
         </View>
 
         {/* ── Begin button ─────────────────────────────────────────── */}
-        <TouchableOpacity style={styles.button} onPress={nextLevel}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => beginLevel(currentLevel)}
+        >
           <Text style={styles.buttonText}>
             {currentLevel.number === 1 ? 'Start the Game' : 'Continue'}
           </Text>

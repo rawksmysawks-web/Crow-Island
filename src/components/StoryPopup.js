@@ -24,6 +24,7 @@ const ICON_JOURNAL = '📖';
 const StoryPopup = ({ event, onDismiss, onChoice }) => {
   const { state } = useGame();
   const { phase } = state;
+  const [resultChoice, setResultChoice] = React.useState(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.9)).current;
   const translateY = useRef(new Animated.Value(20)).current;
@@ -150,29 +151,73 @@ const StoryPopup = ({ event, onDismiss, onChoice }) => {
           );
         })()}
 
-        {/* ── Journal indicator ─────────────────────────────────────── */}
         {event.isJournal && (
           <View style={styles.journalNoteRow}>
-            <Text style={styles.journalNoteEmoji}>{ICON_JOURNAL}</Text>
+            <Text style={styles.journalNoteEmoji}>📖</Text>
             <Text style={styles.journalNote}>Added to your journal</Text>
           </View>
         )}
 
         {/* ── Choices ───────────────────────────────────────────────── */}
-        {event.choices && event.choices.length > 0 ? (
-          event.choices.map((choice, idx) => (
-            <TouchableOpacity 
-              key={idx} 
-              style={styles.choiceButton} 
-              onPress={() => onChoice ? onChoice(choice) : onDismiss()}
-            >
-              <Text style={styles.choiceButtonText}>{choice.text}</Text>
+        {!resultChoice ? (
+          event.choices && event.choices.length > 0 ? (
+            event.choices.map((choice, idx) => (
+              <TouchableOpacity 
+                key={idx} 
+                style={styles.choiceButton} 
+                onPress={() => setResultChoice(choice)}
+              >
+                <Text style={styles.choiceButtonText}>{choice.text}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={onDismiss}>
+              <Text style={styles.buttonText}>Continue</Text>
             </TouchableOpacity>
-          ))
+          )
         ) : (
-          <TouchableOpacity style={styles.button} onPress={onDismiss}>
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
+          <View style={styles.resultContainer}>
+            <View style={styles.resultHeader}>
+               <Text style={styles.resultTitle}>RESULT</Text>
+               <View style={styles.resultDivider} />
+            </View>
+            <Text style={styles.resultText}>{resultChoice.resultText || "Your choice has been made."}</Text>
+            
+            {(() => {
+              const eff = resultChoice.effect || {};
+              const fear = eff.fearDelta || 0;
+              const progress = eff.progressDelta || 0;
+              const shield = eff.shieldDelta || 0;
+              const crow = eff.crowPressureDelta || 0;
+
+              const effects = [];
+              if (fear !== 0) effects.push({ val: `${fear > 0 ? '+' : ''}${fear}`, icon: ICON_FEAR, color: fear > 0 ? '#b71c1c' : '#2e7d32' });
+              if (progress !== 0) effects.push({ val: `${progress > 0 ? '+' : ''}${progress}`, icon: ICON_PROGRESS, color: '#1565c0' });
+              if (shield !== 0) effects.push({ val: `${shield > 0 ? '+' : ''}${shield}`, icon: ICON_SHIELD, color: '#283593' });
+              if (crow !== 0) effects.push({ val: `${crow > 0 ? '+' : ''}${crow}`, icon: ICON_CROW, color: '#ef6c00' });
+
+              return (
+                <View style={styles.effectRow}>
+                  {effects.map((item, i) => (
+                    <View key={i} style={styles.effectItem}>
+                      <Text style={[styles.effectValue, { color: item.color }]}>{item.val}</Text>
+                      <Image source={item.icon} style={styles.effectIcon} />
+                    </View>
+                  ))}
+                  {effects.length === 0 && <Text style={styles.noEffectText}>Nothing changed...</Text>}
+                </View>
+              );
+            })()}
+
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => {
+                onChoice ? onChoice(resultChoice) : onDismiss();
+              }}
+            >
+              <Text style={styles.buttonText}>Continue</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </Animated.View>
     </Animated.View>
@@ -360,6 +405,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter_700Bold',
     textAlign: 'center',
+  },
+  resultContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 10,
+  },
+  resultHeader: {
+    alignItems: 'center',
+    marginBottom: 10,
+    width: '100%',
+  },
+  resultTitle: {
+    fontFamily: 'Cinzel_700Bold',
+    fontSize: 12,
+    color: '#8b4513',
+    letterSpacing: 2,
+  },
+  resultDivider: {
+    height: 1,
+    width: '40%',
+    backgroundColor: 'rgba(139, 69, 19, 0.2)',
+    marginTop: 4,
+  },
+  resultText: {
+    color: '#2c1e14',
+    fontSize: 15,
+    fontFamily: 'IndieFlower_400Regular',
+    textAlign: 'center',
+    marginBottom: 15,
+    lineHeight: 20,
+  },
+  noEffectText: {
+    fontFamily: 'Inter_400Regular_Italic',
+    fontSize: 12,
+    color: '#888',
   },
 });
 

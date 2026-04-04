@@ -1,10 +1,7 @@
 /**
  * WinScreen.js — Victory screen with multiple endings.
- *
- * Three endings based on fear at time of escape:
- *   'good'   — fear ≤ 30  — "You made it. Jack Brown walks free."
- *   'escape' — fear 31-65 — "You escaped. But you'll carry this forever."
- *   'dark'   — fear > 65  — "You escaped. But are you the same?"
+ * 
+ * RESTORED V2 VERSION.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -22,11 +19,11 @@ import JourneyTimeline from '../components/JourneyTimeline';
 import JournalScreen from './JournalScreen';
 import BannerScene from '../components/BannerScene';
 import GlobalMenu from '../components/GlobalMenu';
+import { stopBackgroundMusic } from '../game/AudioManager';
 
 const PLAYER = require('../../assets/images/player_tired.png');
 const TRUE_ENDING_BOAT = require('../../assets/images/true_ending_boat.png');
 const CROW   = require('../../assets/images/crow_silhouette.png');
-const ICON_JOURNAL     = require('../../assets/images/icon_journal.png');
 
 const ENDINGS = {
   good: {
@@ -76,8 +73,8 @@ const ENDINGS = {
 };
 
 const WinScreen = () => {
-  const { state, restart, toggleMute } = useGame();
-  const { ending, fear, isMuted } = state;
+  const { state, restart } = useGame();
+  const { ending, fear, lastAction } = state;
 
   const endingKey = ending ?? 'escape';
   const e = ENDINGS[endingKey] ?? ENDINGS.escape;
@@ -98,25 +95,24 @@ const WinScreen = () => {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: e.colour }]}>
-      {/* ── Background World (BannerScene) ────────────────────────── */}
       <View style={StyleSheet.absoluteFill}>
         <BannerScene bannerKey="pano_escape" phase="day" />
       </View>
+      
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <GlobalMenu />
-        {/* ── Image ─────────────────────────────────────────────────── */}
+
         <View style={styles.imageWrap}>
           <Image 
             source={e.image} 
             style={[
               styles.image,
-              e.title === 'THE TRUTH' || e.title === 'ESCAPED' || e.title === 'SURVIVED' ? { width: 180, height: 220, transform: [{ scale: 0.5 }, { translateX: -45 }, { translateY: -55 }] } : {}
+              (endingKey !== 'dark') && { transform: [{ scale: 1.2 }] }
             ]} 
             resizeMode="contain" 
           />
         </View>
 
-        {/* ── Title ─────────────────────────────────────────────────── */}
         <Animated.Text
           style={[
             styles.title,
@@ -126,25 +122,25 @@ const WinScreen = () => {
           {e.title}
         </Animated.Text>
 
-        {/* ── Subtitle ──────────────────────────────────────────────── */}
         <Text style={[styles.subtitle, { color: e.textAccent }]}>{e.subtitle}</Text>
 
-        {/* ── Stars ─────────────────────────────────────────────────── */}
         <View style={[styles.starRow, { borderColor: e.accent }]}>
           <Text style={[styles.stars, { color: e.textAccent }]}>{e.stars}</Text>
           <Text style={[styles.starLabel, { color: e.textAccent }]}>{e.starLabel}</Text>
         </View>
 
-        {/* ── Ending body ───────────────────────────────────────────── */}
         <Text style={styles.body}>{e.body}</Text>
 
-        {/* ── Final fear indicator ──────────────────────────────────── */}
-        <Text style={styles.fearNote}>Final fear: {Math.round(fear)}/100</Text>
+        <View style={styles.detailsArea}>
+           <Text style={styles.fearNote}>Final fear: {Math.round(fear)}/100</Text>
+           {lastAction && (
+             <Text style={styles.lastActionText}>Last Action: {lastAction}</Text>
+           )}
+        </View>
 
-        {/* ── Play again & Journey ────────────────────────────────────────────── */}
         <View style={styles.buttonRow}>
           <TouchableOpacity
-            style={[styles.button, { borderColor: e.accent }]}
+            style={[styles.button, { borderColor: e.accent, backgroundColor: e.colour }]}
             onPress={restart}
           >
             <Text style={[styles.buttonText, { color: e.textAccent }]}>
@@ -161,11 +157,12 @@ const WinScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* ── Credits ────────────────────────────────────────────────── */}
         <View style={styles.creditsArea}>
           <Text style={styles.creditText}>Based on a short story written by Tyler James Hamilton.</Text>
+          <Text style={styles.creditText}>Created for Dancer.Digital • Music by DELOSound</Text>
         </View>
       </Animated.View>
+
       {showTimeline && (
         <JourneyTimeline 
           log={state.journeyLog} 
@@ -193,28 +190,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   imageWrap: {
-    width: 90,
-    height: 110,
+    width: 200,
+    height: 180,
     overflow: 'hidden',
     marginBottom: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
-    width: 90,
-    height: 110,
+    width: 140,
+    height: 140,
     opacity: 0.85,
   },
   title: {
     fontSize: 38,
-    fontWeight: 'bold',
+    fontFamily: 'Cinzel_700Bold',
     letterSpacing: 6,
     textAlign: 'center',
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    fontStyle: 'italic',
+    fontFamily: 'Inter_700Bold',
     marginBottom: 12,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
   starRow: {
     borderWidth: 1,
@@ -228,49 +228,53 @@ const styles = StyleSheet.create({
   },
   stars: {
     fontSize: 18,
+    fontFamily: 'Inter_700Bold',
   },
   starLabel: {
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontFamily: 'Cinzel_700Bold',
     letterSpacing: 1,
   },
   body: {
-    color: '#888',
+    color: '#bbb',
     fontSize: 13,
+    fontFamily: 'Inter_400Regular',
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 12,
   },
-  controls: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
-    flexDirection: 'column',
+  detailsArea: {
     alignItems: 'center',
+    marginBottom: 20,
+  },
+  fearNote: {
+    color: '#666',
+    fontSize: 11,
+    fontFamily: 'Inter_400Regular_Italic',
+  },
+  lastActionText: {
+    color: '#888',
+    fontSize: 11,
+    fontFamily: 'Inter_700Bold',
+    marginTop: 4,
+    textTransform: 'uppercase',
+  },
+  buttonRow: {
+    flexDirection: 'row',
     gap: 15,
-    zIndex: 100,
-  },
-  controlBtn: {
-    width: 42,
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlIcon: {
-    width: 20,
-    height: 20,
   },
   button: {
     borderWidth: 2,
     borderRadius: 8,
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: 'transparent',
+    minWidth: 140,
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    letterSpacing: 2,
+    fontSize: 13,
+    fontFamily: 'Cinzel_700Bold',
+    letterSpacing: 1.5,
   },
   creditsArea: {
     marginTop: 40,
@@ -280,27 +284,10 @@ const styles = StyleSheet.create({
   creditText: {
     color: '#aaa',
     fontSize: 10,
-    marginBottom: 2,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 4,
     letterSpacing: 0.5,
-  },
-  muteBtn: {
-    position: 'absolute',
-    top: 50,
-    right: 30,
-    zIndex: 100,
-    width: 38,
-    height: 38,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  controlIcon: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
+    textAlign: 'center',
   },
 });
 
