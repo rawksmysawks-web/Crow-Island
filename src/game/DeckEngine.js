@@ -22,6 +22,28 @@ export const shuffle = (array) => {
 };
 
 /**
+ * Build a shuffled deck for a level.
+ * @param {object} level  — level definition from levels.js
+ * @returns {{ deck: object[], hand: object[], discardPile: object[] }}
+ */
+export const buildLevelDeck = (level) => {
+  // Use v2's specific global deck builder
+  const rawDeck = buildGlobalDeck(30).map((c) => ({
+    ...c,
+    instanceId: `${c.id}_${Math.random().toString(36).substring(2, 9)}`,
+  }));
+  
+  const shuffled = shuffle(rawDeck);
+  
+  // Draw initial hand based on level handSize
+  const handSize = level?.handSize || 5;
+  const hand = shuffled.slice(0, handSize);
+  const deck = shuffled.slice(handSize);
+
+  return { deck, hand, discardPile: [] };
+};
+
+/**
  * Initialize the global deck for the entire game.
  * @param {object} firstLevel - The starting level definition.
  * @param {number} deckSize   - The size of the deck based on difficulty.
