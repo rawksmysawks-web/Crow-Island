@@ -22,7 +22,7 @@ import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
 import { formatInGameTime } from '../game/TimeSystem';
 
 const CROW     = require('../../assets/images/crow_silhouette.png');
-const PLAYER   = require('../../assets/images/sprites/player_front_stand.png');
+const PLAYER   = require('../../assets/images/player_sprite.png');
 const BG_NIGHT = require('../../assets/images/banner_night.png');
 
 const VARIANTS = {
