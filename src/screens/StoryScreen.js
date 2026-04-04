@@ -14,34 +14,41 @@ import {
   SafeAreaView,
   ScrollView,
   Animated,
-  Image,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
 import { LEVELS } from '../data/levels';
-import { LinearGradient } from 'expo-linear-gradient';
-import GlobalMenu from '../components/GlobalMenu';
-import BannerScene from '../components/BannerScene';
 
+const STORY_TEXT = `You are Police Officer Jack Brown.
 
-// Icons are now emojis
+Three days ago you received a message. It came from Crow Island — a small, ignored scrap of land two miles offshore. The message said only one thing:
 
-const STORY_TEXT = `Dispatch Log — Officer Jack Brown.
+"Come. Please."
 
-Three days ago, a torn envelope arrived at the precinct. No return address. Just a single, jagged line of ink:
+No name. No number. You came anyway. That's what you do.
 
-"I was wrong about the island. They're not just stories. Please hurry."
+The ferry dropped you at a wooden dock. The boat is gone now. You're alone on the island.
 
-Two miles offshore. A place the mainland prefers to forget. 
+There are farms here — full of food, ready to harvest, untouched. Gates left open. Buildings empty. No sign of where the people went.
 
-The local ferry dropped me at the decaying wooden dock an hour ago and immediately turned back. The air here is dead, heavy with the smell of wet earth and salt. Ahead of me sit silent, overgrown farms. 
+As you searched, the day began to fade.
 
-Nobody is waiting for me. I haven't seen a single soul. Only the crows watching from the fences.
+In the food shed, scratched into every wall — marks made by something that wasn't quite human. On the floor, carved so deep the letters split the wood:
 
-I need to find whoever sent that message before the sun goes down.`;
+"DAY = SAFE. NIGHT = RUN."
+
+You didn't understand. Not then.
+
+Now the sun is going down. 
+
+You hear a CAW and then everything fades to black. You awaken, dazed, confused, surrounded by giant large feathers... wait are those bones?
+
+You feel a chill... let's get out of here.
+
+Survive the Island. Find a way off. Don't let the shadow in the dark take you. Every choice matters. All actions have consequences.`;
 
 const StoryScreen = () => {
-  const { beginLevel, state, setScreen, setDifficulty } = useGame();
-  const { difficulty } = state;
+  const { beginLevel, state, toggleMute } = useGame();
+  const { isMuted } = state;
   const [visible, setVisible]     = useState(false);
   const fadeAnim                  = useRef(new Animated.Value(0)).current;
 
@@ -59,55 +66,17 @@ const StoryScreen = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ── Background World (BannerScene) ────────────────────────── */}
-      <View style={StyleSheet.absoluteFill}>
-        <BannerScene bannerKey="pano_arrival" phase="day" />
-      </View>
-      <View style={styles.bgScrim} />
-
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        <View style={styles.topRightControls}>
-          <GlobalMenu />
-        </View>
+        {/* ── Mute Toggle (Top Right) ────────────────────────────── */}
+        <TouchableOpacity style={styles.muteBtn} onPress={toggleMute}>
+          <Text style={styles.muteIcon}>{isMuted ? '🔇' : '🔊'}</Text>
+        </TouchableOpacity>
 
         <View style={styles.page}>
           <View style={styles.pageHeader}>
             <Text style={styles.title}>Dispatch Notes</Text>
-            <Text style={styles.date}>Initial Entry — 5:45 PM</Text>
+            <Text style={styles.date}>Officer Jack Brown — 6:00 PM</Text>
           </View>
-
-          <View style={styles.topActions}>
-            <TouchableOpacity 
-              style={styles.handbookBtn} 
-              onPress={() => setScreen('instructions')}
-            >
-               <Text style={styles.handbookBtnText}>📖 Read Dispatch Handbook</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.difficultySection}>
-            <Text style={styles.difficultyHeader}>Select Difficulty:</Text>
-            <View style={styles.difficultyRow}>
-              {['easy', 'medium', 'hard'].map((diff) => (
-                <TouchableOpacity
-                  key={diff}
-                  style={[
-                    styles.diffBtn,
-                    difficulty === diff && styles.diffBtnActive
-                  ]}
-                  onPress={() => setDifficulty(diff)}
-                >
-                  <Text style={[
-                     styles.diffBtnText,
-                     difficulty === diff && styles.diffBtnTextActive
-                  ]}>
-                    {diff === 'easy' ? 'Tourist' : diff === 'medium' ? 'Officer' : 'Abyss'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-          
           
           <ScrollView
             style={styles.scroll}
@@ -131,35 +100,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a1a',
   },
-  bgScrim: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
   container: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  topRightControls: {
+  muteBtn: {
     position: 'absolute',
     top: 50,
     right: 30,
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
-    zIndex: 1000,
+    zIndex: 100,
   },
-  controlBtn: {
-    width: 42,
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
+  muteIcon: {
+    fontSize: 24,
   },
   page: {
     backgroundColor: '#f4e4bc',
@@ -204,9 +158,9 @@ const styles = StyleSheet.create({
   },
   body: {
     color: '#2c1e14',
-    fontSize: 22,
-    lineHeight: 32,
-    fontFamily: 'IndieFlower_400Regular',
+    fontSize: 16,
+    lineHeight: 28,
+    fontFamily: 'Inter_400Regular_Italic',
     textAlign: 'left',
   },
   button: {
@@ -221,60 +175,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Cinzel_700Bold',
     letterSpacing: 1,
-  },
-  topActions: {
-    marginBottom: 15,
-    alignItems: 'center',
-  },
-  handbookBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#8b4513',
-  },
-  handbookBtnText: {
-    fontFamily: 'IndieFlower_400Regular',
-    fontSize: 18,
-    color: '#2c1e14',
-    textDecorationLine: 'underline',
-  },
-  difficultySection: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 4,
-  },
-  difficultyHeader: {
-    fontFamily: 'Cinzel_700Bold',
-    fontSize: 12,
-    color: '#5d4037',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  difficultyRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  diffBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: '#d2b48c',
-    borderRadius: 2,
-    backgroundColor: 'rgba(0,0,0,0.02)',
-  },
-  diffBtnActive: {
-    backgroundColor: '#2c1e14',
-    borderColor: '#2c1e14',
-  },
-  diffBtnText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 10,
-    color: '#5d4037',
-  },
-  diffBtnTextActive: {
-    color: '#f4e4bc',
   },
 });
 

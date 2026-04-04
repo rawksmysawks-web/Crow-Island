@@ -44,10 +44,11 @@ export const LEVELS = [
     phase: 'day',
     intro:
       'Your boat touches the dock. The island smells of salt and something else — something older.\n\nYou are Police Officer Jack Brown. You received a message and you came. That is what you do.\n\nThe farms stretch ahead. Start moving.',
-    handSize: 4,
+    handSize: 5,
+    darkCardWeight: 0.2,   // mostly light cards — tutorial level
     fearDecayRate: 1,
-    crowMaxPressure: 100,
-    progressGoal: 600,
+    crowMaxPressure: 100,   // forgiving
+    progressGoal: 100,
     shelterNodes: [60],
     hasShelter: true,
     dayBonus: {
@@ -61,7 +62,7 @@ export const LEVELS = [
       crowPressureBoost: 0,
     },
     victoryText: 'You reach the edge of the first farm. The island feels manageable. For now.',
-    defeatHint: 'Tip: Use Lantern Glare and Cautious Move cards early to manage the crow level.',
+    defeatHint: 'Tip: Play Lantern Glow and Safe Path cards early to build progress fast.',
   },
 
   // ─── LEVEL 2: THE FARMS ────────────────────────────────────────────────────
@@ -73,16 +74,17 @@ export const LEVELS = [
     phase: 'day',
     intro:
       'The farms are strange. Everything is growing. Everything is ready to harvest. But there is nobody here.\n\nCrows watch from every fence post. Something scratched at the barn doors.\n\nKeep your lantern close.',
-    handSize: 4,
-    fearDecayRate: 1,
-    crowMaxPressure: 100,
-    progressGoal: 750,
+    handSize: 5,
+    darkCardWeight: 0.35,
+    fearDecayRate: 2,
+    crowMaxPressure: 85,
+    progressGoal: 100,
     shelterNodes: [40, 80],
     hasShelter: true,
     dayBonus: {
       fearDecayBonus: 3,
       lightCardBonus: 1.15,
-      crowPressureLimit: 30,
+      crowPressureLimit: 20,
     },
     nightPenalty: {
       extraFearPerTurn: 5,
@@ -90,7 +92,7 @@ export const LEVELS = [
       crowPressureBoost: 5,
     },
     victoryText: 'You pass through the last farm gate. In the centre of the island: a large shed.',
-    defeatHint: 'Tip: Have a clogged hand? Use the Swap mechanic to discard bad cards, even if it adds fear.',
+    defeatHint: 'Tip: The Raised Shield card blocks the next dark card completely.',
   },
 
   // ─── LEVEL 3: THE SHED ─────────────────────────────────────────────────────
@@ -103,9 +105,10 @@ export const LEVELS = [
     intro:
       'The shed is full of food. Too much food. Enough to last months.\n\nThere is a hole in the roof. Scratch marks cover every wall — low at first, then higher than any person should reach.\n\nSomething lives here. Or visits.',
     handSize: 5,
+    darkCardWeight: 0.45,
     fearDecayRate: 1,
-    crowMaxPressure: 100,
-    progressGoal: 1000,
+    crowMaxPressure: 70,
+    progressGoal: 100,
     shelterNodes: [50],
     hasShelter: true,
     dayBonus: {
@@ -119,7 +122,7 @@ export const LEVELS = [
       crowPressureBoost: 8,
     },
     victoryText: 'You have seen enough. You search the floor and find three words carved deep into the wood.',
-    defeatHint: 'Tip: Look out for shelter nodes (🔥). Reaching them heals your fear drastically.',
+    defeatHint: 'Tip: Use shelter cards at the 50% node to reset your fear completely.',
   },
 
   // ─── LEVEL 4: THE WARNING ──────────────────────────────────────────────────
@@ -132,9 +135,10 @@ export const LEVELS = [
     intro:
       '"DAY = SAFE. NIGHT = RUN."\n\nThe words were carved by someone who knew. The sun is low now. The shadows are stretching.\n\nYou have to move. Now.',
     handSize: 5,
+    darkCardWeight: 0.55,
     fearDecayRate: 1,
-    crowMaxPressure: 100,
-    progressGoal: 1250,
+    crowMaxPressure: 45,
+    progressGoal: 100,
     shelterNodes: [35, 70],
     hasShelter: true,
     dayBonus: {
@@ -143,13 +147,13 @@ export const LEVELS = [
       crowPressureLimit: 30,
     },
     nightPenalty: {
-      extraFearPerTurn: 5,
+      extraFearPerTurn: 10,
       darkCardMultiplier: 1.4,
       crowPressureBoost: 12,
     },
     victoryText:
       'Night falls. Full, thick, island dark. You saw it — just for a moment — at the treeline. That shape.',
-    defeatHint: 'Tip: Brace for Impact is a powerful shield card. Play it when you know a high-risk event is coming.',
+    defeatHint: 'Tip: Dawn\'s Light is a legendary card that forces a day phase. Save it for night.',
   },
 
   // ─── LEVEL 5: NIGHT HUNT ───────────────────────────────────────────────────
@@ -162,9 +166,10 @@ export const LEVELS = [
     intro:
       'Full dark. The island has no streetlights, no cars, no other people. Just you, a failing torch, and something that hunts in the night.\n\nIt has seen you. It is coming.\n\nRun.',
     handSize: 5,
-    fearDecayRate: 0,
-    crowMaxPressure: 90,
-    progressGoal: 1800,
+    darkCardWeight: 0.65,
+    fearDecayRate: 0,     // fear does not naturally go down at night
+    crowMaxPressure: 35,  // much more dangerous
+    progressGoal: 100,
     shelterNodes: [30, 65],
     hasShelter: true,
     dayBonus: {
@@ -173,12 +178,12 @@ export const LEVELS = [
       crowPressureLimit: 50,
     },
     nightPenalty: {
-      extraFearPerTurn: 6,
-      darkCardMultiplier: 1.3,
-      crowPressureBoost: 8,
+      extraFearPerTurn: 12,
+      darkCardMultiplier: 1.5,
+      crowPressureBoost: 15,
     },
     victoryText: 'You reach the far shore. You can see the dock. Almost there.',
-    defeatHint: 'Tip: Fear doesn\'t naturally decay at night. You must use Light cards like Calm Nerves to stay sane.',
+    defeatHint: 'Tip: Shelter cards and Police Radio are your lifelines. Keep them until you need them.',
   },
 
   // ─── LEVEL 6: ESCAPE ───────────────────────────────────────────────────────
@@ -191,9 +196,10 @@ export const LEVELS = [
     intro:
       'The dock. Your boat. The mainland.\n\nIt is right behind you. The creature is not hiding anymore. It is coming — wings loud, steps wrong, too fast.\n\nThis is the last run. Make it count.',
     handSize: 6,
+    darkCardWeight: 0.7,
     fearDecayRate: 0,
-    crowMaxPressure: 90,
-    progressGoal: 2500,
+    crowMaxPressure: 25,  // one mistake and it's over
+    progressGoal: 100,
     shelterNodes: [50],
     hasShelter: true,
     dayBonus: {
@@ -202,12 +208,12 @@ export const LEVELS = [
       crowPressureLimit: 60,
     },
     nightPenalty: {
-      extraFearPerTurn: 7,
-      darkCardMultiplier: 1.5,
-      crowPressureBoost: 10,
+      extraFearPerTurn: 15,
+      darkCardMultiplier: 1.6,
+      crowPressureBoost: 18,
     },
     victoryText: 'You made it.',
-    defeatHint: 'Tip: You are almost free. Sacrifice your fear points to Swap aggressively and push for the end.',
+    defeatHint: 'Tip: You are almost free. Discard dark cards fast and chain progress cards.',
   },
 ];
 

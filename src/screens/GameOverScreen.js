@@ -16,23 +16,14 @@ import {
   Animated,
   Easing,
   SafeAreaView,
-  Dimensions,
-  Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useGame } from '../context/GameContext';
 import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
 import { formatInGameTime } from '../game/TimeSystem';
-import JourneyTimeline from '../components/JourneyTimeline';
-import JournalScreen from './JournalScreen';
-import BannerScene from '../components/BannerScene';
-import GlobalMenu from '../components/GlobalMenu';
 
-
-const CROW     = require('../../assets/images/capture_screen_entity.png');
-const PLAYER   = require('../../assets/images/player_tired.png');
+const CROW     = require('../../assets/images/crow_silhouette.png');
+const PLAYER   = require('../../assets/images/sprites/player_front_stand.png');
 const BG_NIGHT = require('../../assets/images/banner_night.png');
-const ICON_JOURNAL     = require('../../assets/images/icon_journal.png');
 
 const VARIANTS = {
   crow_capture: {
@@ -60,9 +51,6 @@ const GameOverScreen = () => {
   const { loseReason, currentLevel, isMuted } = state;
 
   const variant = VARIANTS[loseReason] ?? VARIANTS.fear_overload;
-
-  const [showTimeline, setShowTimeline] = React.useState(false);
-  const [showJournal, setShowJournal] = React.useState(false);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
@@ -94,23 +82,16 @@ const GameOverScreen = () => {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: variant.colour }]}>
-      {/* ── Background World (BannerScene) ────────────────────────── */}
-      <View style={StyleSheet.absoluteFill}>
-        <BannerScene bannerKey={currentLevel?.bannerKey || 'pano_night'} phase="night" />
-      </View>
+      {/* ── Night background ─────────────────────────────────────────── */}
+      <Image source={BG_NIGHT} style={styles.bgImage} resizeMode="cover" />
+      <View style={styles.bgScrim} />
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        {/* ── TOP RIGHT: MENU ── */}
-        <GlobalMenu />
+        {/* ── Mute Toggle ────────────────────────────────────────────── */}
+        <TouchableOpacity style={styles.muteBtn} onPress={toggleMute}>
+          <Text style={styles.muteIcon}>{isMuted ? '🔇' : '🔊'}</Text>
+        </TouchableOpacity>
         {/* ── Image ─────────────────────────────────────────────────── */}
-        {variant.image && variant.title !== 'CONSUMED' && (
-          <View style={styles.imageWrap}>
-            <Image 
-              source={variant.image} 
-              style={styles.image} 
-              resizeMode="contain" 
-            />
-          </View>
-        )}
+        <Image source={variant.image} style={styles.image} resizeMode="contain" />
 
         {/* ── Title ─────────────────────────────────────────────────── */}
         <Animated.Text
@@ -131,52 +112,36 @@ const GameOverScreen = () => {
         <Text style={styles.body}>{variant.body}</Text>
 
         {/* ── Time of Death ────────────────────────────────────────── */}
-        {currentLevel && typeof formatInGameTime === 'function' ? (
-          <Text style={styles.levelIndicator}>
-            Time of Death: {formatInGameTime(currentLevel.phase, state.progress)} — {currentLevel.name}
-          </Text>
-        ) : (
-          <Text style={styles.levelIndicator}>Time of Death: Unknown — Island Secrets</Text>
+        {currentLevel && (
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.levelIndicator}>
+              Time of Death: {formatInGameTime(currentLevel.phase, state.progress)} — {currentLevel.name}
+            </Text>
+            {state.lastAction && (
+              <Text style={styles.fatalActionText}>
+                Fatal Action: {state.lastAction}
+              </Text>
+            )}
+          </View>
         )}
 
-        {/* ── Retry & Journey ─────────────────────────────────────────── */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={[styles.button, { borderColor: variant.accent, backgroundColor: variant.colour }]}
-            onPress={restart}
-          >
-            <Text style={[styles.buttonText, { color: variant.textAccent }]}>
-              Try Again
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { borderColor: variant.accent, backgroundColor: 'rgba(255,255,255,0.05)' }]}
-            onPress={() => setShowTimeline(true)}
-          >
-            <Text style={[styles.buttonText, { color: variant.textAccent }]}>
-              Review Journey
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {/* ── Retry ─────────────────────────────────────────────────── */}
+        <TouchableOpacity
+          style={[styles.button, { borderColor: variant.accent, backgroundColor: variant.colour }]}
+          onPress={restart}
+        >
+          <Text style={[styles.buttonText, { color: variant.textAccent }]}>
+            Try Again
+          </Text>
+        </TouchableOpacity>
 
         {/* ── Credits ────────────────────────────────────────────────── */}
         <View style={styles.creditsArea}>
-          <Text style={styles.creditText}>Based on a short story written by Tyler James Hamilton.</Text>
+          <Text style={styles.creditText}>Author — Tyler James Hamilton</Text>
+          <Text style={styles.creditText}>Game — Dancer.Digital</Text>
+          <Text style={styles.creditText}>Music — DELOSound</Text>
         </View>
       </Animated.View>
-      {showTimeline && (
-        <JourneyTimeline 
-          log={state.journeyLog} 
-          onClose={() => setShowTimeline(false)} 
-          onOpenJournal={() => {
-            setShowTimeline(false);
-            setShowJournal(true);
-          }}
-        />
-      )}
-      {showJournal && (
-        <JournalScreen onCloseOverride={() => setShowJournal(false)} />
-      )}
     </SafeAreaView>
   );
 };
@@ -187,9 +152,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bgImage: {
-    width: '100%',
-    height: '100%',
-    top: Platform.OS === 'web' ? 0 : -50, 
+    position: 'absolute',
+    top: 0, left: 0,
+    width: '100%', height: '100%',
   },
   bgScrim: {
     position: 'absolute',
@@ -201,15 +166,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 28,
   },
-  imageWrap: {
-    width: 200,
-    height: 240,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
   image: {
-    width: 200,
-    height: 240,
+    width: 100,
+    height: 120,
+    marginBottom: 16,
     opacity: 0.85,
   },
   title: {
@@ -237,12 +197,13 @@ const styles = StyleSheet.create({
     color: '#444',
     fontSize: 11,
     fontStyle: 'italic',
-    marginBottom: 24,
+    marginBottom: 4,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 15,
-    marginTop: 10,
+  fatalActionText: {
+    color: '#888',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 24,
   },
   button: {
     borderWidth: 2,
@@ -266,24 +227,14 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     letterSpacing: 0.5,
   },
-  controls: {
+  muteBtn: {
     position: 'absolute',
-    top: 40,
-    right: 20,
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 15,
+    top: 50,
+    right: 30,
+    zIndex: 100,
   },
-  controlBtn: {
-    width: 42,
-    height: 42,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  controlIcon: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
+  muteIcon: {
+    fontSize: 24,
   },
 });
 

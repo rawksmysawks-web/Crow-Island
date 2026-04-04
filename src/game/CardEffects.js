@@ -121,6 +121,46 @@ export const resolveCard = (card, state, level) => {
 };
 
 /**
+ * Preview effective card values without applying state changes or specials.
+ * @param {object} card 
+ * @param {object} state 
+ * @param {object} level 
+ * @returns {object} { fearDelta, progressDelta, crowPressureDelta }
+ */
+export const previewCard = (card, state, level) => {
+  if (card.corrupted) return { fearDelta: 0, progressDelta: 0, crowPressureDelta: 0, shieldDelta: 0 };
+  
+  const isNight = state.phase === 'night';
+  const isDay = state.phase === 'day';
+  let { fearDelta, progressDelta, shieldDelta, crowPressure } = card.effect;
+
+  if (card.type === 'dark') {
+    const mult = isNight ? (level.nightPenalty?.darkCardMultiplier ?? 1.0) : 1.0;
+    fearDelta = Math.round(fearDelta * mult);
+    crowPressure = Math.round((crowPressure ?? 0) * mult);
+    progressDelta = Math.round(progressDelta * mult);
+    
+    if (state.nextDarkReduced) {
+        fearDelta = Math.round(fearDelta * 0.5);
+        crowPressure = Math.round((crowPressure ?? 0) * 0.5);
+    }
+  }
+
+  if (card.type === 'light' && isDay) {
+    const mult = level.dayBonus?.lightCardBonus ?? 1.0;
+    progressDelta = Math.round(progressDelta * mult);
+    fearDelta = Math.round(fearDelta * mult);
+  }
+
+  return {
+    fearDelta,
+    progressDelta,
+    crowPressureDelta: crowPressure ?? 0,
+    shieldDelta: shieldDelta ?? 0,
+  };
+};
+
+/**
  * Check if the current progress is within range of any shelter node (±8%).
  * @param {number}   progress      0-100
  * @param {number[]} shelterNodes
@@ -138,7 +178,7 @@ export const isAtShelterNode = (progress, shelterNodes = []) =>
 const getCardMessage = (card, state) => {
   if (card.type === 'light') {
     const msgs = [
-      card.flavorText,
+      card.description,
       'The light helps.',
       'You feel more certain.',
       'Forward.',
@@ -147,12 +187,12 @@ const getCardMessage = (card, state) => {
   }
   if (card.type === 'dark') {
     const msgs = [
-      card.flavorText,
+      card.description,
       'Something is wrong.',
       'The darkness presses closer.',
       state.phase === 'night' ? 'Night = run.' : 'The day is fading.',
     ];
     return msgs[Math.floor(Math.random() * msgs.length)];
   }
-  return card.flavorText || "Keep moving.";
+  return card.description;
 };
