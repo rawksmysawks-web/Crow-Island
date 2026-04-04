@@ -1,14 +1,14 @@
 /**
  * randomEvents.js — Choice-driven events triggered upon movement.
  *
- * This version gives players more agency by offering choices for each triggered event.
+ * RESTORED V2 DATA with Choice Agency.
  */
 
 export const RANDOM_EVENTS = [
   {
-    id: 'voices_in_shadow',
+    id: 'voices_v2',
     name: 'Voices',
-    message: 'Did someone call your name? A whisper drifts from the tall grass.',
+    message: 'Did someone call your name? The shadows twist and fear grips you.',
     choices: [
       {
         text: 'Ignore and push forward',
@@ -19,16 +19,28 @@ export const RANDOM_EVENTS = [
         text: 'Stop and listen',
         effect: { fearDelta: 25, progressDelta: 0, crowPressureDelta: -5 },
         journal: 'I stopped to listen to the whispers. They sounded... familiar. It chilled me to the bone.'
-      },
-      {
-        text: 'Shout into the dark',
-        effect: { fearDelta: 50, progressDelta: 150, crowPressureDelta: 30 },
-        journal: 'I lost my temper and shouted back. The silence that followed was worse than the whispers.'
       }
     ]
   },
   {
-    id: 'smoldering_ash',
+    id: 'wings_above_v2',
+    name: 'Wings Above',
+    message: 'Feathers fall around you. A massive shadow passes over the moon. It knows where you are.',
+    choices: [
+      {
+        text: 'Hide in the corn',
+        effect: { fearDelta: 15, progressDelta: -40, crowPressureDelta: -30 },
+        journal: 'I dove for cover as a shadow passed overhead. I think it missed me.'
+      },
+      {
+        text: 'Keep moving steadily',
+        effect: { fearDelta: 10, progressDelta: 100, crowPressureDelta: 25 },
+        journal: 'I didn’t let the shadow slow me down, even as the wings beat above.'
+      }
+    ]
+  },
+  {
+    id: 'ash_v2',
     name: 'Smoldering Ash',
     message: 'A campfire, still warm. Someone was just here.',
     choices: [
@@ -41,74 +53,45 @@ export const RANDOM_EVENTS = [
         text: 'Search for clues',
         effect: { fearDelta: 10, progressDelta: 50, crowPressureDelta: 10, clueId: 'camp_clue' },
         journal: 'Searched the campsite. Found a scrap of a uniform. One of ours?'
-      },
-      {
-        text: 'Extinguish it safely',
-        effect: { fearDelta: 5, progressDelta: 0, crowPressureDelta: -20 },
-        journal: 'Put out the fire. Better not to lead the crows straight to a light source.'
       }
     ]
   },
   {
-    id: 'the_wings_above',
-    name: 'Wings Above',
-    message: 'A massive shadow passes over the moon. The flapping is deafening.',
+    id: 'stumble_v2',
+    name: 'Stumble',
+    message: 'You trip in the dark! Progress lost as you scramble back up.',
     choices: [
       {
-        text: 'Hide in the brush',
-        effect: { fearDelta: 15, progressDelta: -50, crowPressureDelta: -30 },
-        journal: 'I dove for cover as a shadow passed overhead. I think it missed me.'
+        text: 'Scramble up quickly',
+        effect: { fearDelta: 20, progressDelta: -50, crowPressureDelta: 20 },
+        journal: 'I fell and bruised my knee. The sound of my fall seemed so loud.'
       },
       {
-        text: 'Keep moving steadily',
-        effect: { fearDelta: 10, progressDelta: 100, crowPressureDelta: 20 },
-        journal: 'I didn’t let the shadow slow me down, even as the wings beat above.'
+        text: 'Recover carefully',
+        effect: { fearDelta: 10, progressDelta: -100, crowPressureDelta: 5 },
+        journal: 'I took my time getting back up. Slow is smooth, smooth is fast.'
       }
     ]
   },
   {
-    id: 'abandoned_shed',
-    name: 'Dilapidated Shed',
-    message: 'A small wooden structure stands alone in the field. The door creaks.',
+    id: 'supplies_v2',
+    name: 'Abandoned Supplies',
+    message: 'You find some old supplies. The sight calms you.',
     choices: [
       {
-        text: 'Go inside to rest',
-        effect: { fearDelta: -40, progressDelta: 0, crowPressureDelta: -10, journal: 'Rested in a shed. It smelled of old grain and fear.' },
+        text: 'Take medical kit',
+        effect: { fearDelta: -40, progressDelta: 0, crowPressureDelta: 0 },
+        journal: 'Found a medical kit. I feel a bit more prepared for whatever is out here.'
       },
       {
-        text: 'Rummage through tools',
-        effect: { fearDelta: 10, progressDelta: 0, crowPressureDelta: 15, shieldDelta: 1 },
-        journal: 'Found some scrap metal in the shed. I can use this to brace myself.'
-      },
-      {
-        text: 'Check the walls for writing',
-        effect: { fearDelta: 20, progressDelta: 0, crowPressureDelta: 0, clueId: 'shed_writing' },
-        journal: 'The walls were covered in frantic scribbles: "THEY HEAR THE HEARTBEAT."'
-      }
-    ]
-  },
-  {
-    id: 'sudden_adrenaline',
-    name: 'Panic or Resolve',
-    message: 'Your heart hammers against your ribs. You feel a sudden surge of energy.',
-    choices: [
-      {
-        text: 'Run like hell',
-        effect: { fearDelta: 40, progressDelta: 300, crowPressureDelta: 40 },
-        journal: 'I just ran. I didn’t think. I just ran until my lungs burned.'
-      },
-      {
-        text: 'Breathe and focus',
-        effect: { fearDelta: -50, progressDelta: 50, crowPressureDelta: -10 },
-        journal: 'I forced myself to breathe. Slow. In. Out. The island felt smaller after that.'
+        text: 'Take protective gear',
+        effect: { fearDelta: 0, progressDelta: 0, crowPressureDelta: 0, shieldDelta: 1 },
+        journal: 'Found a reinforced jacket. It won’t stop a bullet, but it might stop a beak.'
       }
     ]
   }
 ];
 
-/**
- * Roll for a random event based on phase probabilities.
- */
 export const rollRandomEvent = (phase) => {
   const roll = Math.random();
   let eventChance = 0;

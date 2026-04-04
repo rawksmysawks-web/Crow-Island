@@ -21,10 +21,16 @@ import {
   Easing,
 } from 'react-native';
 
-// ── Card type colour config (edit here to restyle card types) ─────────────────
-const BG_MOVEMENT = require('../../assets/images/cards/card_movement.png');
-const BG_LIGHT = require('../../assets/images/cards/card_light.png');
-const BG_SHIELD = require('../../assets/images/cards/card_shield.png');
+const ICON_CROW     = require('../../assets/images/icon_crow_v2.png');
+const ICON_MOVEMENT = require('../../assets/images/icon_progress_v2.png');
+const ICON_FEAR     = require('../../assets/images/icon_fear_pixel.png');
+const ICON_SHIELD   = require('../../assets/images/icon_shield_v2.png');
+
+// ── Card type art config ─────────────────────────────────────────────────────
+const BG_MOVEMENT = require('../../assets/images/cards/card_art_movement.png');
+const BG_LIGHT = require('../../assets/images/cards/card_art_light.png');
+const BG_PROTECTION = require('../../assets/images/cards/card_art_shelter.png');
+const BG_PANIC = require('../../assets/images/cards/card_art_panic.png');
 
 const TYPE_THEME = {
   light: {
@@ -45,8 +51,6 @@ const TYPE_THEME = {
     label:  'MOVEMENT',
     image: BG_MOVEMENT,
   },
-  // The existing 'dark' type is being replaced by the new structure.
-  // The existing 'shield' type is being replaced by the new structure.
   shelter: {
     frame:  '#003300',
     header: '#1b5e20',
@@ -54,16 +58,16 @@ const TYPE_THEME = {
     text:   '#e8f5e9',
     badge:  '#388e3c',
     label:  'SHELTER',
-    image: BG_SHIELD,
+    image: BG_PROTECTION,
   },
   shield: {
     frame: '#1a237e', 
     header: '#283593', 
-    accent: '#8c9eff', // Lighter purple for visibility
+    accent: '#8c9eff', 
     text: '#e8eaf6', 
-    badge: '#8c9eff', // Contrast against header
+    badge: '#8c9eff', 
     label: 'SHIELD',
-    image: require('../../assets/images/cards/card_shield.png'),
+    image: require('../../assets/images/cards/card_art_shield.png'),
   },
   dark: {
     frame: '#212121', 
@@ -71,18 +75,19 @@ const TYPE_THEME = {
     accent: '#ea80fc', 
     text: '#f3e5f5', 
     badge: '#ea80fc', 
-    label: 'PANIC', // Changed from DARK to PANIC for consistency
-    image: null, 
+    label: 'PANIC', 
+    image: BG_PANIC, 
   },
 };
 
-// ── Rarity stars ──────────────────────────────────────────────────────────────
-const RARITY_STARS = { common: '★', rare: '★★', legendary: '★★★' };
+const RARITY_LABEL = { common: '•', rare: '••', legendary: '•••' };
 const RARITY_COLOUR = { common: '#aaa', rare: '#ff9800', legendary: '#ffd700' };
 
-const CardComponent = ({ card, onPlay, disabled = false, previewValues = null }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const shakeAnim = useRef(new Animated.Value(0)).current; // For dark card shake
+const CardComponent = ({ card, onPlay, onSwap, disabled = false, onHoverIn, onHoverOut, previewValues = null }) => {
+  const scaleAnim  = useRef(new Animated.Value(1)).current;
+  const hoverAnim  = useRef(new Animated.Value(0)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const shakeAnim  = useRef(new Animated.Value(0)).current;
 
   const theme = TYPE_THEME[card.type] ?? TYPE_THEME.light;
   const isCorrupted = !!card.corrupted;
@@ -90,33 +95,47 @@ const CardComponent = ({ card, onPlay, disabled = false, previewValues = null })
 
   const handlePressIn = useCallback(() => {
     if (isDisabled) return;
-    Animated.spring(scaleAnim, {
-      toValue: 1.06,
-      friction: 5,
-      tension: 200,
-      useNativeDriver: true,
-    }).start();
     if (card.type === 'dark') {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(shakeAnim, { toValue: 1, duration: 50, easing: Easing.linear, useNativeDriver: true }),
-          Animated.timing(shakeAnim, { toValue: -1, duration: 50, easing: Easing.linear, useNativeDriver: true }),
-          Animated.timing(shakeAnim, { toValue: 0, duration: 50, easing: Easing.linear, useNativeDriver: true }),
-        ]),
-        { iterations: 3 }
+          Animated.timing(shakeAnim, { toValue: 1, duration: 50, useNativeDriver: true }),
+          Animated.timing(shakeAnim, { toValue: -1, duration: 50, useNativeDriver: true }),
+        ])
       ).start();
+    } else {
+      Animated.sequence([
+        Animated.timing(scaleAnim, { toValue: 1.1, duration: 100, useNativeDriver: true }),
+        Animated.spring(scaleAnim, { toValue: 1.06, friction: 4, useNativeDriver: true }),
+      ]).start();
     }
   }, [isDisabled, card.type]);
 
   const handlePressOut = useCallback(() => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      friction: 6,
-      useNativeDriver: true,
-    }).start();
-    shakeAnim.stopAnimation(); // Stop shake animation on press out
+    Animated.parallel([
+      Animated.spring(scaleAnim, { toValue: 1, friction: 6, useNativeDriver: true }),
+      Animated.spring(hoverAnim, { toValue: 0, friction: 6, useNativeDriver: true }),
+      Animated.spring(rotateAnim, { toValue: 0, friction: 6, useNativeDriver: true }),
+    ]).start();
+    shakeAnim.stopAnimation();
     shakeAnim.setValue(0);
   }, []);
+
+  const handleHoverIn = () => {
+    if (isDisabled) return;
+    Animated.parallel([
+      Animated.spring(hoverAnim, { toValue: -15, friction: 8, useNativeDriver: true }),
+      Animated.spring(rotateAnim, { toValue: 1, friction: 8, useNativeDriver: true }),
+    ]).start();
+    onHoverIn?.();
+  };
+
+  const handleHoverOut = () => {
+    Animated.parallel([
+      Animated.spring(hoverAnim, { toValue: 0, friction: 8, useNativeDriver: true }),
+      Animated.spring(rotateAnim, { toValue: 0, friction: 8, useNativeDriver: true }),
+    ]).start();
+    onHoverOut?.();
+  };
 
   const handlePress = useCallback(() => {
     if (isDisabled) return;
@@ -124,23 +143,62 @@ const CardComponent = ({ card, onPlay, disabled = false, previewValues = null })
   }, [isDisabled, card, onPlay]);
 
   // ── Effect summary text ────────────────────────────────────────────────────
-  const effectBits = [];
+  const effects = [];
   const activeEffects = previewValues || card.effect;
   const { fearDelta, progressDelta, shieldDelta, crowPressure, crowPressureDelta } = activeEffects;
   const cp = crowPressure !== undefined ? crowPressure : crowPressureDelta;
-
-  if (fearDelta !== 0)    effectBits.push(`${fearDelta > 0 ? '+' : ''}${fearDelta} 😰`);
-  if (progressDelta !== 0) effectBits.push(`${progressDelta > 0 ? '+' : ''}${progressDelta} 👣`);
-  if (shieldDelta > 0)    effectBits.push(`+${shieldDelta} 🛡`);
-  if (cp > 0)   effectBits.push(`+${cp} 🐦`);
+  
+  if (fearDelta !== 0) {
+    effects.push({ 
+      val: `${fearDelta > 0 ? '+' : ''}${Math.round(fearDelta)}`, 
+      icon: ICON_FEAR 
+    });
+  }
+  if (progressDelta !== 0) {
+    effects.push({ 
+      val: `${progressDelta > 0 ? '+' : ''}${Math.round(progressDelta)}`, 
+      icon: ICON_MOVEMENT 
+    });
+  }
+  if (shieldDelta > 0) {
+    effects.push({ 
+      val: `+${Math.round(shieldDelta)}`, 
+      icon: ICON_SHIELD 
+    });
+  }
+  if (cp !== 0 && cp !== undefined) {
+    effects.push({ 
+      val: `${cp > 0 ? '+' : ''}${Math.round(cp)}`, 
+      icon: ICON_CROW 
+    });
+  }
 
   const translateX = shakeAnim.interpolate({
     inputRange: [-1, 0, 1],
-    outputRange: [-2, 0, 2], // Small shake left and right
+    outputRange: [-2, 0, 2],
+  });
+
+  const rotation = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '2deg'],
   });
 
   return (
-    <Animated.View style={[styles.wrapper, { transform: [{ scale: scaleAnim }, { translateX: card.type === 'dark' ? translateX : 0 }] }]}>
+    <Animated.View 
+      style={[
+        styles.wrapper, 
+        { 
+          transform: [
+            { scale: scaleAnim }, 
+            { translateY: hoverAnim },
+            { rotate: rotation },
+            { translateX: card.type === 'dark' ? translateX : 0 }
+          ] 
+        }
+      ]}
+      onMouseEnter={handleHoverIn}
+      onMouseLeave={handleHoverOut}
+    >
       <TouchableOpacity
         style={[
           styles.card,
@@ -148,15 +206,24 @@ const CardComponent = ({ card, onPlay, disabled = false, previewValues = null })
           isCorrupted && styles.corrupted,
         ]}
         onPress={handlePress}
+        onLongPress={() => onSwap?.(card)}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
         disabled={isDisabled}
+        delayLongPress={600}
       >
         {/* ── Header Image ─────────────────────────────────────────── */}
         {theme.image && (
            <View style={styles.artContainer}>
-             <Image source={theme.image} style={styles.cardArt} resizeMode="cover" />
+             <Image 
+               source={card.image || theme.image} 
+               style={[
+                 styles.cardArt, 
+                 card.type === 'dark' && { transform: [{ scale: 1.15 }] }
+               ]} 
+               resizeMode="cover" 
+             />
              <View style={styles.artOverlay} /> 
            </View>
         )}
@@ -173,19 +240,20 @@ const CardComponent = ({ card, onPlay, disabled = false, previewValues = null })
 
         {/* ── Rarity ───────────────────────────────────────────────── */}
         <Text style={[styles.rarity, { color: RARITY_COLOUR[card.rarity] }]}>
-          {RARITY_STARS[card.rarity] ?? '★'}
+          {RARITY_LABEL[card.rarity] ?? '•'}
         </Text>
 
         {/* ── Description ──────────────────────────────────────────── */}
         <Text style={[styles.description, { color: theme.text }]} numberOfLines={3}>
-          {isCorrupted ? '⚠️ CORRUPTED — Cannot be played this turn.' : card.description}
+          {isCorrupted ? 'CORRUPTED — Cannot be played this turn.' : card.description}
         </Text>
 
         {/* ── Effects row ──────────────────────────────────────────── */}
         <View style={styles.effectRow}>
-          {effectBits.map((bit, i) => (
-            <View key={i} style={[styles.effectChip, { borderColor: theme.accent }]}>
-              <Text style={[styles.effectText, { color: theme.accent }]}>{bit}</Text>
+          {effects.map((eff, i) => (
+            <View key={i} style={styles.effectChip}>
+              <Text style={[styles.effectText, { color: theme.accent }]}>{eff.val}</Text>
+              <Image source={eff.icon} style={styles.chipEmoji} />
             </View>
           ))}
         </View>
@@ -203,7 +271,8 @@ const CardComponent = ({ card, onPlay, disabled = false, previewValues = null })
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginHorizontal: 5,
+    marginHorizontal: 3, 
+    overflow: 'visible', 
   },
   card: {
     flex: 1,
@@ -212,8 +281,9 @@ const styles = StyleSheet.create({
     minHeight: 180,
     borderRadius: 10,
     borderWidth: 2,
-    overflow: 'hidden',
+    overflow: 'visible',
     paddingBottom: 8,
+    backgroundColor: '#000',
   },
   artContainer: {
     width: '100%',
@@ -221,6 +291,9 @@ const styles = StyleSheet.create({
     position: 'relative',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.5)',
+    overflow: 'hidden',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   cardArt: {
     width: '100%',
@@ -272,14 +345,19 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   effectChip: {
-    borderWidth: 1,
-    borderRadius: 4,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   effectText: {
     fontSize: 9,
     fontFamily: 'Inter_700Bold',
+    marginRight: 2,
+  },
+  chipEmoji: {
+    width: 14,
+    height: 14,
+    resizeMode: 'contain',
+    marginLeft: 2,
   },
   flavour: {
     fontSize: 9,

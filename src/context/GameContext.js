@@ -1,5 +1,7 @@
 /**
  * GameContext.js — Global game state using React Context + useReducer.
+ * 
+ * RESTORED V2 VERSION — Merged with Choice-based Events and Last Action Tracking.
  */
 
 import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
@@ -24,11 +26,10 @@ import { formatInGameTime } from '../game/TimeSystem';
 
 const PANIC_FEAR_RESET = 40; 
 
-// Difficulty scaling factors
 const DIFFICULTY_SCALING = {
-  easy:   { fear: 0.7, goal: 0.8, pressure: 0.7 },
-  medium: { fear: 1.0, goal: 1.0, pressure: 1.0 },
-  hard:   { fear: 1.3, goal: 1.2, pressure: 1.3 },
+  easy:   { fear: 0.75, goal: 0.8, pressure: 0.7, deck: 45 },
+  medium: { fear: 1.0,  goal: 1.0, pressure: 1.0, deck: 35 },
+  hard:   { fear: 1.25, goal: 1.2, pressure: 1.3, deck: 30 },
 };
 
 // ─── Initial state ──────────────────────────────────────────────────────────
@@ -53,10 +54,10 @@ const makeInitialState = () => ({
   discardPile: [],
   seenEvents: [],
   activeEvent: null,
-  journal: [],      // Clue descriptions/narrative
-  clues: [],        // Found clue IDs
+  journal: [],
+  clues: [],
   lastViewedClueCount: 0,
-  journeyLog: [],   // Event history for win screen
+  journeyLog: [],
   cardMessage: null,
   jackThought: "I shouldn't be here.",
   loseReason: null,
@@ -65,8 +66,6 @@ const makeInitialState = () => ({
   lastAction: null,
   bonusHandSize: 0,
 });
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 const computeEnding = (fear) => {
   if (fear <= 30) return 'good';
@@ -84,14 +83,13 @@ const gameReducer = (state, action) => {
 
     case 'START_GAME': {
       playBackgroundMusic();
-      const firstLevel = LEVELS[0];
       return { 
         ...state, 
         screen: 'story',
         journal: [{
           id: 'arrival',
           title: 'Arrival',
-          body: "The ferry dropped me at the decaying wooden dock an hour ago... I need to find whoever sent that message.",
+          body: "The ferry dropped me at the decaying wooden dock an hour ago. I'm alone now. I need to find whoever sent that message before the sun goes down.",
           timestamp: '6:00 PM'
         }]
       };
@@ -99,7 +97,9 @@ const gameReducer = (state, action) => {
 
     case 'BEGIN_LEVEL': {
       const level = action.level ?? LEVELS[0];
-      const { deck, hand, discardPile } = buildLevelDeck(level);
+      const scaling = DIFFICULTY_SCALING[state.difficulty || 'medium'];
+      const { deck, hand, discardPile } = buildLevelDeck(level, scaling.deck);
+      
       return {
         ...state,
         screen: 'game',
@@ -124,33 +124,28 @@ const gameReducer = (state, action) => {
 
     case 'PLAY_CARD': {
       const { card } = action;
-      const { currentLevel: level, hand, deck, discardPile, seenEvents, difficulty } = state;
+      const { currentLevel: level, hand, deck, discardPile, scaling = DIFFICULTY_SCALING[state.difficulty || 'medium'] } = state;
       if (!level) return state;
-
-      const scaling = DIFFICULTY_SCALING[difficulty || 'medium'];
 
       // 1. Resolve card effects
       const delta = resolveCard(card, state, level);
       const effectivePhase = level.phase;
 
       // 2. Apply Fear (with difficulty scaling)
-      let fDelta = delta.fearDelta * scaling.fear;
-      let newFear = applyFear(state.fear, fDelta, effectivePhase, level);
+      let newFear = applyFear(state.fear, delta.fearDelta * (scaling.fear || 1), effectivePhase, level);
       newFear = decayFear(newFear, level, effectivePhase);
       newFear = applyNightPenalty(newFear, level, effectivePhase);
 
       // 3. Apply Crow Pressure (with difficulty scaling)
-      let pDelta = delta.crowPressureDelta * scaling.pressure;
       let { pressure: newCrowPressure, captured } = applyCrowPressure(
         state.crowPressure,
-        pDelta,
+        delta.crowPressureDelta * (scaling.pressure || 1),
         effectivePhase,
         level,
       );
 
       // 4. Progress (with difficulty scaling)
-      // v2 uses a multiplier system based on progressGoal
-      const progressMultiplier = 1 / scaling.goal;
+      const progressMultiplier = 1 / (scaling.goal || 1);
       const moveAmount = (delta.progressDelta / level.progressGoal) * 100 * progressMultiplier;
       let newProgress = Math.min(100, Math.max(0, state.progress + moveAmount));
 
@@ -174,10 +169,10 @@ const gameReducer = (state, action) => {
           discardPile: afterDiscard.discardPile,
         };
         if (cardsToDraw > 1) {
-          afterDraw = drawCards(afterDraw.deck, afterDraw.hand, afterDraw.discardPile, cardsToDraw - 1);
+          afterDraw = drawCards(afterDraw.deck, afterDraw.hand, afterDraw.discardPile, cardsToDraw - 1, state.difficulty !== 'hard');
         }
       } else if (cardsToDraw > 0) {
-        afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, cardsToDraw);
+        afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, cardsToDraw, state.difficulty !== 'hard');
       } else {
         afterDraw = {
           deck: afterDiscard.deck ?? deck,
@@ -188,17 +183,18 @@ const gameReducer = (state, action) => {
 
       // -- Failure Checks --
       if (afterDraw.hand.length === 0 && afterDraw.deck.length === 0 && newProgress < 100) {
-        return { ...state, fear: newFear, progress: newProgress, screen: 'game_over', loseReason: 'fear_overload' };
+        return { ...state, fear: newFear, progress: newProgress, screen: 'game_over', loseReason: 'fear_overload', lastAction: `Played ${card.name}` };
       }
       if (captured) {
-        return { ...state, screen: 'game_over', loseReason: 'crow_capture', crowPressure: newCrowPressure };
+        return { ...state, screen: 'game_over', loseReason: 'crow_capture', crowPressure: newCrowPressure, lastAction: `Played ${card.name}` };
       }
       if (newFear >= FEAR_MAX) {
         if (newShield > 0) {
            newShield -= 1;
            newFear = 75;
+           delta.message = "A shield shattered! You narrowly avoided panic.";
         } else {
-           return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX };
+           return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX, lastAction: `Played ${card.name}` };
         }
       }
 
@@ -211,10 +207,9 @@ const gameReducer = (state, action) => {
           if (randomEvent.choices) {
             activeEventData = { ...randomEvent, title: randomEvent.name, text: randomEvent.message, icon: '⚠️' };
           } else {
-            // Apply simple random event
-            newFear = applyFear(newFear, randomEvent.effect?.fearDelta ?? 0, effectivePhase, level);
-            newProgress = Math.min(100, Math.max(0, newProgress + (randomEvent.effect?.progressDelta ?? 0)));
-            const ce = applyCrowPressure(newCrowPressure, randomEvent.effect?.crowPressure ?? 0, effectivePhase, level);
+            newFear = applyFear(newFear, (randomEvent.effect?.fearDelta ?? 0) * (scaling.fear || 1), effectivePhase, level);
+            newProgress = Math.min(100, Math.max(0, newProgress + ((randomEvent.effect?.progressDelta ?? 0) / level.progressGoal) * 100 * progressMultiplier));
+            const ce = applyCrowPressure(newCrowPressure, (randomEvent.effect?.crowPressure ?? 0) * (scaling.pressure || 1), effectivePhase, level);
             newCrowPressure = ce.pressure;
             eventMessage = randomEvent.message;
           }
@@ -225,26 +220,26 @@ const gameReducer = (state, action) => {
       if (newProgress >= 100) {
         const nextLevel = getNextLevel(level.id);
         if (!nextLevel) {
-          return { ...state, screen: 'win', progress: 100, fear: newFear, ending: computeEnding(newFear) };
+          return { ...state, screen: 'win', progress: 100, fear: newFear, ending: computeEnding(newFear), lastAction: `Played ${card.name}` };
         }
-        return { ...state, progress: 100, fear: newFear, screen: 'level_intro', currentLevel: nextLevel };
+        return { ...state, progress: 100, fear: newFear, screen: 'level_intro', currentLevel: nextLevel, lastAction: `Played ${card.name}` };
       }
 
       // -- Story Events --
       const levelEvents = getEventsForLevel(level.id);
-      const nextEvent = getNextEvent(levelEvents, newProgress, state.seenEvents);
+      const nextStoryEvent = getNextEvent(levelEvents, newProgress, state.seenEvents);
       let newSeenEvents = [...state.seenEvents];
       let newJournal = [...state.journal];
       let activeEvent = activeEventData;
 
-      if (nextEvent) {
-        newSeenEvents.push(nextEvent.id);
-        activeEvent = nextEvent;
-        if (nextEvent.isJournal) {
+      if (nextStoryEvent) {
+        newSeenEvents.push(nextStoryEvent.id);
+        activeEvent = nextStoryEvent;
+        if (nextStoryEvent.isJournal) {
           newJournal.push({
-            id: nextEvent.id,
-            title: nextEvent.title,
-            body: nextEvent.text,
+            id: nextStoryEvent.id,
+            title: nextStoryEvent.title,
+            body: nextStoryEvent.text,
             timestamp: formatInGameTime(effectivePhase, newProgress),
           });
         }
@@ -265,7 +260,7 @@ const gameReducer = (state, action) => {
         journal: newJournal,
         cardMessage: delta.message || eventMessage,
         lastAction: `Played ${card.name}`,
-        jackThought: newFear > 70 ? "I'm not gonna make it." : (state.clues.length >= 10 ? "Almost there." : state.jackThought),
+        jackThought: newFear > 80 ? "I'm not gonna make it." : (state.clues.length >= 10 ? "Almost at the shore." : state.jackThought),
       };
     }
 
@@ -275,22 +270,19 @@ const gameReducer = (state, action) => {
 
       const scaling = DIFFICULTY_SCALING[difficulty || 'medium'];
 
-      // v2 Think Logic (Fixed effects table)
       const effects = [
         { msg: "You listen to the wind.", fear: 2, progress: 5, pressure: 2, thought: "The island is huge." },
         { msg: "Checking the gear.", fear: 0, progress: 0, pressure: -5, thought: "Flashlight is steady." },
         { msg: "The isolation sinks in.", fear: 5, progress: 0, pressure: 0, thought: "I'm so alone out here." },
         { msg: "A deep breath.", fear: -10, progress: 0, pressure: 0, thought: "Gotta get a grip." },
       ];
-      
       const effect = effects[Math.floor(Math.random() * effects.length)];
       
-      let newFear = Math.min(FEAR_MAX, Math.max(0, fear + (effect.fear * scaling.fear) + (phase === 'night' ? 5 : 0)));
-      
+      let newFear = applyFear(fear, effect.fear * scaling.fear, phase, level);
       const progressMultiplier = 1 / scaling.goal;
       const thinkMove = (effect.progress / level.progressGoal) * 100 * progressMultiplier;
       let newProgress = Math.min(100, progress + thinkMove);
-      let newPressure = Math.min(level.crowMaxPressure, crowPressure + effect.pressure);
+      let newPressure = Math.min(level.crowMaxPressure, crowPressure + (effect.pressure * scaling.pressure));
       let newShield = state.shield;
       let msg = effect.msg;
 
@@ -300,18 +292,17 @@ const gameReducer = (state, action) => {
            newFear = 75;
            msg = "Panic nearly took you... but a shield broke the fall.";
         } else {
-           return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX };
+           return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX, lastAction: 'Used Tactical Think' };
         }
       }
 
-      // Optional: Add choice-based random event to Think as well
       const randomEvent = rollRandomEvent(phase);
       let activeEvent = state.activeEvent;
       if (randomEvent && randomEvent.choices) {
         activeEvent = { ...randomEvent, title: randomEvent.name, text: randomEvent.message, icon: '⚠️' };
       }
       
-      const afterDraw = drawCards(deck, hand, discardPile, 1, difficulty !== 'hard', false);
+      const afterDraw = drawCards(deck, hand, discardPile, 1, difficulty !== 'hard');
       const newTurnCount = state.turnCount + 1;
 
       return {
@@ -333,8 +324,9 @@ const gameReducer = (state, action) => {
       const { choice } = action;
       const { effect } = choice;
       const { currentLevel: level, difficulty } = state;
+      const scaling = DIFFICULTY_SCALING[difficulty || 'medium'];
 
-      let newFear = applyFear(state.fear, effect.fearDelta || 0, state.phase, level);
+      let newFear = applyFear(state.fear, (effect.fearDelta || 0) * scaling.fear, state.phase, level);
       let newShield = state.shield;
 
       if (newFear >= FEAR_MAX) {
@@ -342,18 +334,17 @@ const gameReducer = (state, action) => {
           newShield -= 1;
           newFear = 75;
         } else {
-          return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX };
+          return { ...state, screen: 'game_over', loseReason: 'fear_overload', fear: FEAR_MAX, lastAction: `Chose: ${choice.text}` };
         }
       }
 
       const { pressure: newCrowPressure } = applyCrowPressure(
         state.crowPressure,
-        effect.crowPressureDelta || 0,
+        (effect.crowPressureDelta || 0) * scaling.pressure,
         state.phase,
         level,
       );
 
-      const scaling = DIFFICULTY_SCALING[difficulty || 'medium'];
       const progressMultiplier = 1 / scaling.goal;
       const choiceMove = ((effect.progressDelta || 0) / level.progressGoal) * 100 * progressMultiplier;
       const newProgress = Math.min(100, Math.max(0, state.progress + choiceMove));
@@ -392,13 +383,7 @@ const gameReducer = (state, action) => {
     }
 
     case 'DISMISS_EVENT': return { ...state, activeEvent: null };
-
-    case 'TOGGLE_MUTE': {
-      const newMuted = !state.isMuted;
-      setMuted(newMuted);
-      return { ...state, isMuted: newMuted };
-    }
-
+    case 'TOGGLE_MUTE': { const newMuted = !state.isMuted; setMuted(newMuted); return { ...state, isMuted: newMuted }; }
     case 'TOGGLE_PAUSE': return { ...state, screen: state.screen === 'pause' ? 'game' : 'pause' };
     case 'TOGGLE_JOURNAL': return { ...state, screen: state.screen === 'journal' ? 'game' : 'journal' };
     
@@ -406,25 +391,17 @@ const gameReducer = (state, action) => {
       const { cardId } = action;
       const { currentLevel: level, hand, deck, discardPile } = state;
       const afterDiscard = discardCard(hand, discardPile, cardId);
-      const afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, 1);
-      return {
-        ...state,
-        ...afterDraw,
-        fear: Math.min(FEAR_MAX, state.fear + 2),
-        lastAction: 'Swapped a card',
-      };
+      const afterDraw = drawCards(afterDiscard.deck ?? deck, afterDiscard.hand, afterDiscard.discardPile, 1, state.difficulty !== 'hard');
+      return { ...state, ...afterDraw, fear: Math.min(FEAR_MAX, state.fear + 2), lastAction: 'Swapped a card' };
     }
-
-    case 'RESTART': return makeInitialState();
 
     case 'HOVER_CARD': return { ...state, hoverMessage: action.card.flavorText };
     case 'UNHOVER_CARD': return { ...state, hoverMessage: null };
+    case 'RESTART': return makeInitialState();
 
     default: return state;
   }
 };
-
-// ─── Context + Provider ─────────────────────────────────────────────────────
 
 const GameContext = createContext(null);
 
@@ -444,29 +421,13 @@ export const GameProvider = ({ children }) => {
   const setScreen     = useCallback((screen) => dispatch({ type: 'SET_SCREEN', screen }), []);
   const setDifficulty = useCallback((difficulty) => dispatch({ type: 'SET_DIFFICULTY', difficulty }), []);
   const think         = useCallback(() => dispatch({ type: 'THINK' }), []);
-  const toggleMute    = useCallback(() => { dispatch({ type: 'TOGGLE_MUTE' }); }, []);
+  const toggleMute    = useCallback(() => dispatch({ type: 'TOGGLE_MUTE' }), []);
   const hoverCard     = useCallback((card) => dispatch({ type: 'HOVER_CARD', card }), []);
   const unhoverCard   = useCallback(() => dispatch({ type: 'UNHOVER_CARD' }), []);
 
   const value = useMemo(() => ({
-    state,
-    dispatch,
-    startGame,
-    beginLevel,
-    playCard,
-    drawMoreCards,
-    makeChoice,
-    dismissEvent,
-    togglePause,
-    toggleJournal,
-    restart,
-    swapCard,
-    setScreen,
-    setDifficulty,
-    think,
-    toggleMute,
-    hoverCard,
-    unhoverCard,
+    state, dispatch, startGame, beginLevel, playCard, drawMoreCards, makeChoice, dismissEvent,
+    togglePause, toggleJournal, restart, swapCard, setScreen, setDifficulty, think, toggleMute, hoverCard, unhoverCard,
   }), [state, startGame, beginLevel, playCard, drawMoreCards, makeChoice, dismissEvent, togglePause, toggleJournal, restart, swapCard, setScreen, setDifficulty, think, toggleMute, hoverCard, unhoverCard]);
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

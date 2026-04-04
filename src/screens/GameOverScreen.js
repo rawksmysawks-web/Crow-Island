@@ -1,9 +1,11 @@
 /**
- * GameOverScreen.js — Game over screen.
+ * GameOverScreen.js — Global level failure screen.
  *
  * Two variants based on loseReason:
  *   'crow_capture'  — "You heard the wings. Then nothing."
  *   'fear_overload' — "The darkness swallowed you whole."
+ * 
+ * RESTORED V2 VERSION with Last Action support.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -14,16 +16,18 @@ import {
   TouchableOpacity,
   Image,
   Animated,
-  Easing,
   SafeAreaView,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
-import { stopBackgroundMusic, setMuted } from '../game/AudioManager';
+import { stopBackgroundMusic } from '../game/AudioManager';
 import { formatInGameTime } from '../game/TimeSystem';
+import BannerScene from '../components/BannerScene';
+import GlobalMenu from '../components/GlobalMenu';
+import JourneyTimeline from '../components/JourneyTimeline';
+import JournalScreen from './JournalScreen';
 
 const CROW     = require('../../assets/images/crow_silhouette.png');
-const PLAYER   = require('../../assets/images/player_sprite.png');
-const BG_NIGHT = require('../../assets/images/banner_night.png');
+const PLAYER   = require('../../assets/images/player_tired.png');
 
 const VARIANTS = {
   crow_capture: {
@@ -47,24 +51,26 @@ const VARIANTS = {
 };
 
 const GameOverScreen = () => {
-  const { state, restart, toggleMute } = useGame();
-  const { loseReason, currentLevel, isMuted } = state;
+  const { state, restart } = useGame();
+  const { loseReason, currentLevel, lastAction } = state;
 
   const variant = VARIANTS[loseReason] ?? VARIANTS.fear_overload;
+
+  const [showTimeline, setShowTimeline] = React.useState(false);
+  const [showJournal, setShowJournal] = React.useState(false);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     stopBackgroundMusic();
-    // Fade in
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 1000,
       useNativeDriver: true,
     }).start();
 
-    // Title shake
+    // Title shake effect
     Animated.sequence([
       Animated.delay(800),
       Animated.loop(
@@ -82,16 +88,25 @@ const GameOverScreen = () => {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: variant.colour }]}>
-      {/* ── Night background ─────────────────────────────────────────── */}
-      <Image source={BG_NIGHT} style={styles.bgImage} resizeMode="cover" />
-      <View style={styles.bgScrim} />
+      {/* ── Background World (BannerScene) ────────────────────────── */}
+      <View style={StyleSheet.absoluteFill}>
+        <BannerScene bannerKey={currentLevel?.bannerKey || 'pano_night'} phase="night" />
+      </View>
+      
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-        {/* ── Mute Toggle ────────────────────────────────────────────── */}
-        <TouchableOpacity style={styles.muteBtn} onPress={toggleMute}>
-          <Text style={styles.muteIcon}>{isMuted ? '🔇' : '🔊'}</Text>
-        </TouchableOpacity>
+        {/* ── TOP RIGHT: MENU ── */}
+        <GlobalMenu />
+
         {/* ── Image ─────────────────────────────────────────────────── */}
-        <Image source={variant.image} style={styles.image} resizeMode="contain" />
+        {variant.image && variant.title !== 'CONSUMED' && (
+          <View style={styles.imageWrap}>
+            <Image 
+              source={variant.image} 
+              style={styles.image} 
+              resizeMode="contain" 
+            />
+          </View>
+        )}
 
         {/* ── Title ─────────────────────────────────────────────────── */}
         <Animated.Text
@@ -111,37 +126,60 @@ const GameOverScreen = () => {
         {/* ── Body ──────────────────────────────────────────────────── */}
         <Text style={styles.body}>{variant.body}</Text>
 
-        {/* ── Time of Death ────────────────────────────────────────── */}
-        {currentLevel && (
-          <View style={{ alignItems: 'center' }}>
+        {/* ── Time of Death & Fatal Action ─────────────────────────── */}
+        <View style={styles.detailsArea}>
+          {currentLevel && (
             <Text style={styles.levelIndicator}>
               Time of Death: {formatInGameTime(currentLevel.phase, state.progress)} — {currentLevel.name}
             </Text>
-            {state.lastAction && (
-              <Text style={styles.fatalActionText}>
-                Fatal Action: {state.lastAction}
-              </Text>
-            )}
-          </View>
-        )}
+          )}
+          {lastAction && (
+            <Text style={styles.fatalActionText}>
+              Fatal Action: {lastAction}
+            </Text>
+          )}
+        </View>
 
-        {/* ── Retry ─────────────────────────────────────────────────── */}
-        <TouchableOpacity
-          style={[styles.button, { borderColor: variant.accent, backgroundColor: variant.colour }]}
-          onPress={restart}
-        >
-          <Text style={[styles.buttonText, { color: variant.textAccent }]}>
-            Try Again
-          </Text>
-        </TouchableOpacity>
+        {/* ── Retry & Journey ─────────────────────────────────────────── */}
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={[styles.button, { borderColor: variant.accent, backgroundColor: variant.colour }]}
+            onPress={restart}
+          >
+            <Text style={[styles.buttonText, { color: variant.textAccent }]}>
+              Try Again
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, { borderColor: variant.accent, backgroundColor: 'rgba(255,255,255,0.05)' }]}
+            onPress={() => setShowTimeline(true)}
+          >
+            <Text style={[styles.buttonText, { color: variant.textAccent }]}>
+              Review Journey
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Credits ────────────────────────────────────────────────── */}
         <View style={styles.creditsArea}>
-          <Text style={styles.creditText}>Author — Tyler James Hamilton</Text>
-          <Text style={styles.creditText}>Game — Dancer.Digital</Text>
-          <Text style={styles.creditText}>Music — DELOSound</Text>
+          <Text style={styles.creditText}>Based on a short story written by Tyler James Hamilton.</Text>
+          <Text style={styles.creditText}>Created for Dancer.Digital • Music by DELOSound</Text>
         </View>
       </Animated.View>
+
+      {showTimeline && (
+        <JourneyTimeline 
+          log={state.journeyLog} 
+          onClose={() => setShowTimeline(false)} 
+          onOpenJournal={() => {
+            setShowTimeline(false);
+            setShowJournal(true);
+          }}
+        />
+      )}
+      {showJournal && (
+        <JournalScreen onCloseOverride={() => setShowJournal(false)} />
+      )}
     </SafeAreaView>
   );
 };
@@ -151,90 +189,90 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  bgImage: {
-    position: 'absolute',
-    top: 0, left: 0,
-    width: '100%', height: '100%',
-  },
-  bgScrim: {
-    position: 'absolute',
-    top: 0, left: 0,
-    width: '100%', height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.72)',
-  },
   container: {
     alignItems: 'center',
     paddingHorizontal: 28,
   },
-  image: {
-    width: 100,
-    height: 120,
+  imageWrap: {
+    width: 200,
+    height: 240,
+    overflow: 'hidden',
     marginBottom: 16,
+  },
+  image: {
+    width: 200,
+    height: 240,
     opacity: 0.85,
   },
   title: {
     fontSize: 36,
-    fontWeight: 'bold',
+    fontFamily: 'Cinzel_700Bold',
     letterSpacing: 6,
     marginBottom: 6,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     marginBottom: 16,
     textAlign: 'center',
     fontStyle: 'italic',
   },
   body: {
-    color: '#888',
+    color: '#bbb',
     fontSize: 13,
+    fontFamily: 'Inter_400Regular',
     lineHeight: 22,
     textAlign: 'center',
     marginBottom: 20,
   },
+  detailsArea: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
   levelIndicator: {
-    color: '#444',
+    color: '#666',
     fontSize: 11,
-    fontStyle: 'italic',
+    fontFamily: 'Inter_400Regular_Italic',
     marginBottom: 4,
   },
   fatalActionText: {
     color: '#888',
     fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 24,
+    fontFamily: 'Inter_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 15,
+    marginTop: 10,
   },
   button: {
     borderWidth: 2,
     borderRadius: 8,
-    paddingHorizontal: 40,
+    paddingHorizontal: 20,
     paddingVertical: 14,
+    minWidth: 140,
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    letterSpacing: 2,
+    fontSize: 13,
+    fontFamily: 'Cinzel_700Bold',
+    letterSpacing: 1.5,
   },
   creditsArea: {
-    marginTop: 35,
+    marginTop: 40,
     alignItems: 'center',
     opacity: 0.5,
   },
   creditText: {
     color: '#aaa',
     fontSize: 10,
-    marginBottom: 2,
+    fontFamily: 'Inter_400Regular',
+    marginBottom: 4,
     letterSpacing: 0.5,
-  },
-  muteBtn: {
-    position: 'absolute',
-    top: 50,
-    right: 30,
-    zIndex: 100,
-  },
-  muteIcon: {
-    fontSize: 24,
+    textAlign: 'center',
   },
 });
 

@@ -3,6 +3,8 @@
  *
  * Shows the player's current hand with a subtle fan/spread layout.
  * Includes a "Draw" button to draw additional cards.
+ * 
+ * RESTORED V2 VERSION with Icon Assets.
  */
 
 import React from 'react';
@@ -11,36 +13,71 @@ import {
   ScrollView,
   Text,
   StyleSheet,
-  TouchableOpacity,
+  Pressable,
+  Image,
 } from 'react-native';
-import { useGame } from '../context/GameContext';
-import { previewCard } from '../game/CardEffects';
 import CardComponent from './CardComponent';
 
-const CardHand = ({ hand = [], onPlay, onDraw, deckCount = 0, canDraw = true, isSwapMode = false, onToggleSwap }) => {
-  const { state } = useGame();
-  const { currentLevel } = state;
+const ICON_TACTICAL = require('../../assets/images/icon_tactical.png');
+const ICON_FEAR     = require('../../assets/images/icon_fear_pixel.png');
+
+const CardHand = ({ 
+  hand = [], 
+  onPlay, 
+  onSwap, 
+  deckCount = 0, 
+  isSwapMode = false, 
+  onToggleSwap, 
+  onThink, 
+  onHoverCard, 
+  onUnhoverCard,
+  previewValues = null
+}) => {
+  const scrollRef = React.useRef(null);
+  const [scrollX, setScrollX] = React.useState(0);
+
+  const scrollLeft = () => {
+    scrollRef.current?.scrollTo({ x: Math.max(0, scrollX - 140), animated: true });
+  };
+  const scrollRight = () => {
+    scrollRef.current?.scrollTo({ x: scrollX + 140, animated: true });
+  };
 
   return (
     <View style={styles.container}>
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>✋ YOUR HAND</Text>
-        <View style={styles.deckInfo}>
-          <Text style={styles.deckCount}>🃏 {deckCount} left</Text>
-          {canDraw && (
-            <TouchableOpacity style={styles.drawButton} onPress={onDraw}>
-              <Text style={styles.drawButtonText}>DRAW</Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity 
-            style={[styles.drawButton, isSwapMode && styles.swapActiveBtn]} 
+        <View style={styles.titleArea}>
+          <Text style={styles.handTitle}>CARDS LEFT: {deckCount}</Text>
+        </View>
+
+        <View style={styles.actionRowContainer}>
+          <Pressable 
+            style={styles.actionBtn} 
+            onPress={onThink}
+          >
+            <View style={styles.btnContent}>
+              <Image source={ICON_TACTICAL} style={styles.btnIcon} />
+              <Text style={styles.actionBtnText}>TACTICAL THINK</Text>
+            </View>
+            <Text style={styles.actionBtnSubText}>(skip turn + random effect)</Text>
+          </Pressable>
+          
+          <Pressable 
+            style={[styles.actionBtn, isSwapMode && styles.swapActiveBtn]} 
             onPress={onToggleSwap}
           >
-            <Text style={styles.drawButtonText}>
-              {isSwapMode ? 'CANCEL SWAP' : '🔄 SWAP (+2 😰)'}
+            <View style={styles.btnContent}>
+              <Text style={styles.actionBtnText}>
+                {isSwapMode ? '🚫 CANCEL SWAP' : '🔄 SWAP (+2 '}
+              </Text>
+              {!isSwapMode && <Image source={ICON_FEAR} style={styles.smallIcon} />}
+              {!isSwapMode && <Text style={styles.actionBtnText}>)</Text>}
+            </View>
+            <Text style={styles.actionBtnSubText}>
+              {isSwapMode ? '(keep current hand)' : '(burn fear to replace)'}
             </Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -50,10 +87,21 @@ const CardHand = ({ hand = [], onPlay, onDraw, deckCount = 0, canDraw = true, is
           <Text style={styles.emptyText}>No cards in hand — draw more.</Text>
         </View>
       ) : (
+      <View style={styles.scrollWrapper}>
+        {hand.length > 3 && (
+          <Pressable style={[styles.arrowBtn, styles.arrowLeft]} onPress={scrollLeft}>
+            <Text style={styles.arrowText}>‹</Text>
+          </Pressable>
+        )}
+
         <ScrollView
+          ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
+          scrollEventThrottle={16}
+          onScroll={(e) => setScrollX(e.nativeEvent.contentOffset.x)}
         >
           {isSwapMode && (
             <Text style={styles.swapHintText}>Tap a card to discard and replace it.</Text>
@@ -63,10 +111,20 @@ const CardHand = ({ hand = [], onPlay, onDraw, deckCount = 0, canDraw = true, is
               key={card.instanceId || `${card.id}_${index}_${Date.now()}`}
               card={card}
               onPlay={onPlay}
-              previewValues={previewCard(card, state, currentLevel)}
+              onSwap={onSwap}
+              onHoverIn={() => onHoverCard?.(card)}
+              onHoverOut={onUnhoverCard}
+              previewValues={previewValues}
             />
           ))}
         </ScrollView>
+
+        {hand.length > 3 && (
+          <Pressable style={[styles.arrowBtn, styles.arrowRight]} onPress={scrollRight}>
+            <Text style={styles.arrowText}>›</Text>
+          </Pressable>
+        )}
+      </View>
       )}
     </View>
   );
@@ -74,52 +132,87 @@ const CardHand = ({ hand = [], onPlay, onDraw, deckCount = 0, canDraw = true, is
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 4,
+    marginTop: 0,
+    overflow: 'visible',
+    zIndex: 10,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 12,
     marginBottom: 6,
-  },
-  headerTitle: {
-    color: '#ccc',
-    fontSize: 11,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  deckInfo: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    width: '100%',
   },
-  deckCount: {
-    color: '#777',
-    fontSize: 11,
+  titleArea: {
+    alignItems: 'flex-start',
+    marginBottom: 8,
+    width: '100%',
   },
-  drawButton: {
+  handTitle: {
+    color: '#ffe082',
+    fontSize: 13,
+    fontFamily: 'Cinzel_700Bold',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  actionRowContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  actionBtn: {
+    flex: 1,
     backgroundColor: '#1a237e',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: 8,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#3949ab',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   swapActiveBtn: {
     backgroundColor: '#b71c1c',
     borderColor: '#ff5252',
   },
-  drawButtonText: {
+  btnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  btnIcon: {
+    width: 14,
+    height: 14,
+    resizeMode: 'contain',
+  },
+  smallIcon: {
+    width: 12,
+    height: 12,
+    resizeMode: 'contain',
+  },
+  actionBtnText: {
     color: '#90caf9',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Cinzel_700Bold',
     letterSpacing: 1,
+    textAlign: 'center',
+  },
+  actionBtnSubText: {
+    color: '#7986cb',
+    fontSize: 9,
+    fontFamily: 'Inter_400Regular_Italic',
+    textAlign: 'center',
   },
   scrollContent: {
     paddingHorizontal: 8,
-    paddingBottom: 8,
+    paddingTop: 45, 
+    paddingBottom: 15,
+    overflow: 'visible',
+  },
+  scrollView: {
+    overflow: 'visible', 
   },
   emptyHand: {
     height: 80,
@@ -129,7 +222,31 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#555',
     fontSize: 12,
-    fontStyle: 'italic',
+    fontFamily: 'Inter_400Regular_Italic',
+  },
+  scrollWrapper: {
+    position: 'relative',
+    overflow: 'visible',
+  },
+  arrowBtn: {
+    position: 'absolute',
+    top: '50%',
+    width: 30,
+    height: 60,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 500,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  arrowLeft: { left: 2 },
+  arrowRight: { right: 2 },
+  arrowText: {
+    color: '#fff',
+    fontSize: 30,
+    lineHeight: 30,
   },
   swapHintText: {
     position: 'absolute',
@@ -137,7 +254,7 @@ const styles = StyleSheet.create({
     left: 10,
     color: '#ff5252',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
   },
 });
 

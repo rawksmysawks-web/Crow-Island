@@ -1,11 +1,19 @@
+/**
+ * GlobalMenu.js — Dropdown menu for settings and navigation.
+ * 
+ * RESTORED V2 VERSION with Icon Assets.
+ */
+
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useGame } from '../context/GameContext';
 
-const ICON_PAUSE = require('../../assets/images/icon_pause.png');
+const ICON_SPEAKER_ON  = require('../../assets/images/icon_speaker_on.png');
+const ICON_SPEAKER_OFF = require('../../assets/images/icon_speaker_off.png');
+const ICON_JOURNAL     = require('../../assets/images/icon_journal.png');
 
 const GlobalMenu = ({ style }) => {
-  const { state, toggleMute, toggleJournal, restart, setScreen } = useGame();
+  const { state, toggleMute, restart, setScreen } = useGame();
   const [isOpen, setIsOpen] = useState(false);
   const { isMuted } = state;
 
@@ -25,21 +33,25 @@ const GlobalMenu = ({ style }) => {
             style={styles.dropdownItem} 
             onPress={() => { toggleMute(); setIsOpen(false); }}
           >
-            <Text style={styles.iconText}>{isMuted ? '🔇' : '🔊'}</Text>
+            <Image 
+              source={isMuted ? ICON_SPEAKER_OFF : ICON_SPEAKER_ON} 
+              style={styles.controlIcon} 
+            />
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.dropdownItem} 
             onPress={() => { setScreen('journal'); setIsOpen(false); }}
           >
-            <Text style={styles.iconText}>📖</Text>
+            <Image source={ICON_JOURNAL} style={styles.controlIcon} />
           </TouchableOpacity>
 
           <TouchableOpacity 
             style={styles.dropdownItem} 
             onPress={() => { restart(); setIsOpen(false); }}
           >
-            <Text style={styles.iconText}>🔄</Text>
+             {/* Fallback to emoji for restart if no asset exists, or use a distinct v2 style */}
+            <Text style={styles.fallbackIcon}>🔄</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -67,7 +79,7 @@ const styles = StyleSheet.create({
   menuIcon: {
     color: '#fff',
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     top: -2,
   },
   dropdown: {
@@ -90,7 +102,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconText: {
+  controlIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+  },
+  fallbackIcon: {
     fontSize: 22,
   },
 });
